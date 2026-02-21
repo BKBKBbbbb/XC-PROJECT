@@ -1,6 +1,7 @@
 # 易宿酒店预订平台
 
 > 第一天项目初始化完成
+> GitHub: https://github.com/BKBKBbbbb/XC-PROJECT
 
 ## 项目结构
 
