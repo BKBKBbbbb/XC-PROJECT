@@ -1,0 +1,152 @@
+.detail-page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-scroll {
+  flex: 1;
+  height: calc(100vh - 100px);
+}
+
+.loading, .empty {
+  text-align: center;
+  padding: 60px;
+  color: #999;
+  font-size: 28px;
+}
+
+.hotel-banner {
+  width: 100%;
+  height: 400px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.banner-text {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 32px;
+}
+
+.hotel-base {
+  background-color: #fff;
+  padding: 30px;
+  margin-bottom: 20px;
+}
+
+.hotel-name {
+  display: block;
+  font-size: 36px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.hotel-meta {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.star {
+  font-size: 26px;
+  color: #faad14;
+  background-color: #fffbe6;
+  padding: 6px 16px;
+  border-radius: 4px;
+  margin-right: 20px;
+}
+
+.rating {
+  font-size: 26px;
+  color: #ff4d4f;
+}
+
+.hotel-address {
+  font-size: 26px;
+  color: #666;
+}
+
+.section {
+  background-color: #fff;
+  padding: 30px;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  display: block;
+  font-size: 32px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.facilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.facility-tag {
+  font-size: 24px;
+  color: #666;
+  background-color: #f5f5f5;
+  padding: 12px 20px;
+  border-radius: 8px;
+}
+
+.description {
+  font-size: 28px;
+  color: #666;
+  line-height: 1.8;
+}
+
+.bottom-space {
+  height: 20px;
+}
+
+.footer-bar {
+  height: 100px;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 0 30px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.price {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+}
+
+.price-label {
+  font-size: 26px;
+  color: #ff4d4f;
+}
+
+.price-value {
+  font-size: 48px;
+  color: #ff4d4f;
+  font-weight: bold;
+  margin: 0 8px;
+}
+
+.book-btn {
+  width: 240px;
+  height: 80px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  Text {
+    color: #fff;
+    font-size: 32px;
+    font-weight: bold;
+  }
+}

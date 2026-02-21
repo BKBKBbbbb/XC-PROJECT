@@ -1,0 +1,11 @@
+[
+  {
+    "username": "admin",
+    "password": "$2b$10$c5oCxOnIDWiM56ovVIkp8esEljAJhw7kYNDBhkb5aZjA1qPgp0/2i",
+    "role": "admin",
+    "nickname": "Admin",
+    "_id": "b8af422c-fd9e-4816-a184-d294ac3a38fe",
+    "createdAt": "2026-02-21T05:15:54.809Z",
+    "updatedAt": "2026-02-21T05:15:54.810Z"
+  }
+]
