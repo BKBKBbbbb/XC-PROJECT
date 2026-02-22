@@ -32,6 +32,7 @@
     "@tarojs/runtime": "3.6.22",
     "@tarojs/shared": "3.6.22",
     "@tarojs/taro": "3.6.22",
+    "fs-extra": "^11.3.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -41,6 +42,7 @@
     "@tarojs/cli": "3.6.22",
     "@tarojs/webpack-runner": "3.6.22",
     "@types/react": "^18.2.0",
+    "ajv": "^8.12.0",
     "babel-preset-taro": "3.6.22",
     "react-refresh": "^0.11.0",
     "webpack": "^4.46.0"

@@ -1,5 +1,4 @@
 import { useLaunch } from '@tarojs/taro';
-import './styles/index.scss';
 
 function App({ children }) {
   useLaunch(() => {
