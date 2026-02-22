@@ -1,0 +1,14 @@
+[
+  {
+    "name": "1",
+    "city": "2",
+    "address": "3",
+    "star": 4,
+    "customFields": [],
+    "merchantId": "b8af422c-fd9e-4816-a184-d294ac3a38fe",
+    "status": "draft",
+    "_id": "31387424-cd6d-4c00-92bc-7162e29ac601",
+    "createdAt": "2026-02-22T07:22:55.468Z",
+    "updatedAt": "2026-02-22T07:22:55.468Z"
+  }
+]

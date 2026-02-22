@@ -1,6 +1,6 @@
 import { View, Text, ScrollView } from '@tarojs/components';
 import { useState, useEffect } from 'react';
-import { useNavigate, useRouter } from '@tarojs/taro';
+import { useRouter } from '@tarojs/taro';
 import { get } from '../../utils/api';
 import './list.scss';
 
@@ -8,7 +8,6 @@ export default function List() {
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(false);
   const [city, setCity] = useState('');
-  const navigate = useNavigate();
   const router = useRouter();
 
   useEffect(() => {
@@ -35,7 +34,7 @@ export default function List() {
   };
 
   const handleHotelClick = (id) => {
-    navigate({
+    router.navigateTo({
       url: `/pages/detail/detail?id=${id}`
     });
   };

@@ -1,13 +1,14 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import HotelManage from './pages/HotelManage';
 import HotelForm from './pages/HotelForm';
 import ReviewManage from './pages/ReviewManage';
 import './App.css';
 
-// 简单的路由守卫
+// 路由守卫
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   return token ? children : <Navigate to="/login" />;
@@ -18,6 +19,7 @@ function App() {
     <div className="app">
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={
           <PrivateRoute><Dashboard /></PrivateRoute>
         } />

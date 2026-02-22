@@ -1,17 +1,12 @@
-import { Component } from 'react';
-import { createApp } from 'tarojs';
+import { useLaunch } from '@tarojs/taro';
 import './styles/index.scss';
 
-class App extends Component {
-  componentDidMount() {}
+function App({ children }) {
+  useLaunch(() => {
+    console.log('App launched.');
+  });
 
-  componentDidShow() {}
-
-  componentDidHide() {}
-
-  render() {
-    return this.props.children;
-  }
+  return children;
 }
 
-createApp(App);
+export default App;

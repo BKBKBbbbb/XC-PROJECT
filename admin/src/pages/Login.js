@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
 const Login = () => {
@@ -15,7 +15,16 @@ const Login = () => {
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
       message.success('登录成功');
-      navigate('/dashboard');
+      
+      // 根据用户角色跳转到不同页面
+      const userRole = res.data.user.role;
+      if (userRole === 'admin') {
+        // 管理员跳转到审核列表页
+        navigate('/review');
+      } else {
+        // 商户跳转到信息录入页（酒店管理）
+        navigate('/hotel');
+      }
     } catch (error) {
       message.error(error.response?.data?.message || '登录失败');
     } finally {
@@ -59,6 +68,10 @@ const Login = () => {
               登录
             </Button>
           </Form.Item>
+          
+          <div className="login-footer">
+            还没有账号？<Link to="/register">立即注册</Link>
+          </div>
         </Form>
       </div>
     </div>

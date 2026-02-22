@@ -1,4 +1,4 @@
-export default defineApp({
+module.exports = {
   pages: [
     'pages/index/index',
     'pages/list/list',
@@ -24,4 +24,4 @@ export default defineApp({
       }
     ]
   }
-});
+};

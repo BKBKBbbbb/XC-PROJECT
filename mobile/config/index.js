@@ -19,33 +19,20 @@ const config = {
     options: {}
   },
   framework: 'react',
-  mini: {
-    postcss: {
-      pxtransform: {
-        enable: true,
-        config: {}
-      },
-      url: {
-        enable: true,
-        config: {
-          limit: 1024
-        }
-      }
-    }
-  },
+  mini: {},
   h5: {
     publicPath: '/',
     staticDirectory: 'static',
-    postcss: {
-      autoprefixer: {
-        enable: true,
-        config: {}
-      }
-    },
     router: {
       mode: 'hash',
       customRoutes: {}
     }
+  },
+  webpackChain(chain) {
+    // 排除 .config.js 文件不被 babel-loader 处理
+    chain.module.rule('js').exclude.add(path.resolve(__dirname, 'src/app.config.js'));
+    chain.module.rule('js').exclude.add(path.resolve(__dirname, 'src/pages'));
+    return chain;
   }
 };
 

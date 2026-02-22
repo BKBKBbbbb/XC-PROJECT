@@ -7,5 +7,14 @@
     "_id": "b8af422c-fd9e-4816-a184-d294ac3a38fe",
     "createdAt": "2026-02-21T05:15:54.809Z",
     "updatedAt": "2026-02-21T05:15:54.810Z"
+  },
+  {
+    "username": "merchant",
+    "password": "$2b$10$QJqyD5wdBTQny2OrlL1Mb.zaCLc2KbVreYg/OYGMBBHrCusvVDOya",
+    "role": "merchant",
+    "nickname": "测试商户",
+    "_id": "dc6702f0-1896-435d-b3d6-cc6231fab87c",
+    "createdAt": "2026-02-22T07:33:10.081Z",
+    "updatedAt": "2026-02-22T07:33:10.082Z"
   }
 ]

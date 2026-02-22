@@ -9,6 +9,8 @@
     "css": "sass"
   },
   "scripts": {
+    "dev": "npm run dev:h5",
+    "start": "npm run dev",
     "dev:weapp": "npm run build:weapp -- --watch",
     "dev:h5": "npm run build:h5 -- --watch",
     "build:weapp": "taro build --type weapp",
@@ -19,5 +21,28 @@
     "last 3 versions",
     "Android >= 4.4",
     "ios >= 9"
-  ]
+  ],
+  "dependencies": {
+    "@babel/runtime": "^7.23.0",
+    "@tarojs/components": "3.6.22",
+    "@tarojs/plugin-framework-react": "3.6.22",
+    "@tarojs/plugin-platform-h5": "3.6.22",
+    "@tarojs/react": "3.6.22",
+    "@tarojs/router": "3.6.22",
+    "@tarojs/runtime": "3.6.22",
+    "@tarojs/shared": "3.6.22",
+    "@tarojs/taro": "3.6.22",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.0",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.5.7",
+    "@tarojs/cli": "3.6.22",
+    "@tarojs/webpack-runner": "3.6.22",
+    "@types/react": "^18.2.0",
+    "babel-preset-taro": "3.6.22",
+    "react-refresh": "^0.11.0",
+    "webpack": "^4.46.0"
+  }
 }

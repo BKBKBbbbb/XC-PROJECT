@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, Space, Modal, message } from 'antd';
+import { 
+  Layout, Menu, Table, Button, Tag, Space, Modal, message, Breadcrumb 
+} from 'antd';
 import * as Icons from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+
+const { Header, Sider, Content } = Layout;
 
 const { confirm } = Modal;
 
@@ -12,10 +16,49 @@ const Icon = ({ type }) => {
   return IconComponent ? <IconComponent /> : null;
 };
 
+// 主题色配置
+const theme = {
+  primary: '#00B42A',
+  warning: '#F53F3F',
+  bgMain: '#F5F7FA',
+  textPrimary: '#1D2129',
+  textSecondary: '#4E5969',
+  textTertiary: '#86909C',
+  border: '#E5E6EB',
+  siderBg: '#1D2129',
+};
+
 const HotelManage = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedMenu, setSelectedMenu] = useState('hotel');
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // 获取用户信息判断角色
+  const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAdmin = userInfo.role === 'admin';
+
+  // 菜单项
+  const menuItems = [
+    {
+      key: '/dashboard',
+      icon: <Icon type="DashboardOutlined" />,
+      label: '控制台',
+      onClick: () => navigate('/dashboard')
+    },
+    {
+      key: '/hotel',
+      icon: <Icon type="BankOutlined" />,
+      label: isAdmin ? '酒店管理' : '信息录入',
+    },
+    ...(isAdmin ? [{
+      key: '/review',
+      icon: <Icon type="AuditOutlined" />,
+      label: '审核管理',
+      onClick: () => navigate('/review')
+    }] : []),
+  ];
 
   const fetchData = async () => {
     setLoading(true);
@@ -129,23 +172,94 @@ const HotelManage = () => {
   ];
 
   return (
-    <div>
-      <div style={{ marginBottom: 16 }}>
-        <Button 
-          type="primary" 
-          icon={<Icon type="PlusOutlined" />} 
-          onClick={handleAdd}
+    <Layout style={{ minHeight: '100vh' }}>
+        <Sider 
+          width={220} 
+          style={{ 
+            background: '#1D2129',
+            borderRight: '1px solid #E5E6EB'
+          }}
         >
-          添加酒店
-        </Button>
-      </div>
-      <Table 
-        columns={columns} 
-        dataSource={data} 
-        rowKey="_id"
-        loading={loading}
-      />
-    </div>
+        <div style={{ 
+          padding: '16px', 
+          fontSize: '18px', 
+          fontWeight: 'bold',
+          textAlign: 'center',
+          borderBottom: '1px solid #f0f0f0',
+          color: '#1890ff'
+        }}>
+          易宿后台
+        </div>
+        <Menu
+          mode="inline"
+          selectedKeys={[location.pathname]}
+          onClick={({ key }) => {
+            if (key === '/dashboard') navigate('/dashboard');
+            else if (key === '/review') navigate('/review');
+            else if (key === '/hotel') setSelectedMenu('hotel');
+          }}
+          style={{ height: '100%', borderRight: 0 }}
+          items={menuItems}
+        />
+      </Sider>
+      
+      <Layout>
+        <Header style={{ 
+          background: '#fff', 
+          padding: '0 24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: '1px solid #E5E6EB',
+          position: 'sticky',
+          top: 0,
+          zIndex: 99
+        }}>
+          <Breadcrumb>
+            <Breadcrumb.Item>
+              <Button 
+                type="link" 
+                onClick={() => navigate('/dashboard')}
+              >
+                首页
+              </Button>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>{isAdmin ? '酒店管理' : '信息录入'}</Breadcrumb.Item>
+          </Breadcrumb>
+          <div style={{ color: '#666' }}>
+            欢迎，{userInfo.username || '用户'}
+          </div>
+        </Header>
+        
+        <Content style={{ 
+          padding: '24px', 
+          minHeight: 280,
+          background: '#F5F7FA'
+        }}>
+          <div style={{ marginBottom: 16 }}>
+            <h2>{isAdmin ? '酒店管理' : '我的酒店'}</h2>
+            <p style={{ color: '#666' }}>
+              {isAdmin ? '管理所有酒店信息' : '录入和管理您的酒店信息'}
+            </p>
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <Button 
+              type="primary" 
+              icon={<Icon type="PlusOutlined" />} 
+              onClick={handleAdd}
+            >
+              {isAdmin ? '添加酒店' : '新增酒店'}
+            </Button>
+          </div>
+          <Table 
+            columns={columns} 
+            dataSource={data} 
+            rowKey="_id"
+            loading={loading}
+          />
+        </Content>
+      </Layout>
+    </Layout>
   );
 };
 

@@ -1,8 +1,25 @@
-import React, { useState } from 'react';
-import { Table, Tag, Space, Button, message } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { 
+  Layout, Menu, Table, Tag, Space, Button, message, Breadcrumb 
+} from 'antd';
+import { 
+  HomeOutlined, AuditOutlined, BankOutlined, 
+  CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined,
+  ArrowLeftOutlined
+} from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+const { Header, Sider, Content } = Layout;
 
 const ReviewManage = () => {
   const [loading, setLoading] = useState(false);
+  const [selectedMenu, setSelectedMenu] = useState('review');
+  const navigate = useNavigate();
+  
+  // 获取用户信息判断角色
+  const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAdmin = userInfo.role === 'admin';
 
   // 模拟数据
   const mockData = [
@@ -35,12 +52,33 @@ const ReviewManage = () => {
     }
   ];
 
+  // 菜单项
+  const menuItems = [
+    {
+      key: 'dashboard',
+      icon: <HomeOutlined />,
+      label: '控制台',
+      onClick: () => navigate('/dashboard')
+    },
+    {
+      key: 'hotel',
+      icon: <BankOutlined />,
+      label: '酒店管理',
+      onClick: () => navigate('/hotel')
+    },
+    {
+      key: 'review',
+      icon: <AuditOutlined />,
+      label: '审核管理',
+    },
+  ];
+
   const handleDelete = (id) => {
     message.success('删除成功');
   };
 
   const handleAudit = (id, status) => {
-    message.success(`审核通过`);
+    message.success(status === 'published' ? '审核通过' : '审核拒绝');
   };
 
   const columns = [
@@ -90,16 +128,28 @@ const ReviewManage = () => {
       render: (_, record) => (
         <Space size="middle">
           {record.status === 'pending' && (
-            <Button 
-              type="link" 
-              onClick={() => handleAudit(record._id, 'published')}
-            >
-              审核通过
-            </Button>
+            <>
+              <Button 
+                type="link" 
+                icon={<CheckCircleOutlined />}
+                onClick={() => handleAudit(record._id, 'published')}
+              >
+                通过
+              </Button>
+              <Button 
+                type="link" 
+                danger
+                icon={<CloseCircleOutlined />}
+                onClick={() => handleAudit(record._id, 'rejected')}
+              >
+                拒绝
+              </Button>
+            </>
           )}
           <Button 
             type="link" 
             danger 
+            icon={<DeleteOutlined />}
             onClick={() => handleDelete(record._id)}
           >
             删除
@@ -110,14 +160,82 @@ const ReviewManage = () => {
   ];
 
   return (
-    <div>
-      <Table 
-        columns={columns} 
-        dataSource={mockData} 
-        rowKey="_id"
-        loading={loading}
-      />
-    </div>
+    <Layout style={{ minHeight: '100vh' }}>
+        <Sider 
+          width={220} 
+          style={{ 
+            background: '#1D2129',
+            borderRight: '1px solid #E5E6EB'
+          }}
+        >
+        <div style={{ 
+          padding: '16px', 
+          fontSize: '18px', 
+          fontWeight: 'bold',
+          textAlign: 'center',
+          borderBottom: '1px solid #f0f0f0',
+          color: '#1890ff'
+        }}>
+          易宿后台
+        </div>
+        <Menu
+          mode="inline"
+          selectedKeys={[selectedMenu]}
+          onClick={({ key }) => setSelectedMenu(key)}
+          style={{ height: '100%', borderRight: 0 }}
+          items={menuItems}
+        />
+      </Sider>
+      
+      <Layout>
+        <Header style={{ 
+          background: '#fff', 
+          padding: '0 24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: '1px solid #E5E6EB',
+          position: 'sticky',
+          top: 0,
+          zIndex: 99
+        }}>
+          <Breadcrumb>
+            <Breadcrumb.Item>
+              <Button 
+                type="link" 
+                icon={<ArrowLeftOutlined />}
+                onClick={() => navigate('/dashboard')}
+              >
+                返回首页
+              </Button>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>审核管理</Breadcrumb.Item>
+          </Breadcrumb>
+          <div style={{ color: '#666' }}>
+            欢迎，{userInfo.username || '管理员'}
+          </div>
+        </Header>
+        
+        <Content style={{ 
+          padding: '24px', 
+          minHeight: 280,
+          background: '#F5F7FA'
+        }}>
+          <div style={{ marginBottom: 16 }}>
+            <h2>评论审核列表</h2>
+            <p style={{ color: '#666' }}>
+              对用户的评论进行审核管理，待审核的评论需要管理员进行审核后才能显示
+            </p>
+          </div>
+          <Table 
+            columns={columns} 
+            dataSource={mockData} 
+            rowKey="_id"
+            loading={loading}
+          />
+        </Content>
+      </Layout>
+    </Layout>
   );
 };
 
