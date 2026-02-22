@@ -211,14 +211,13 @@ const Dashboard = () => {
       <Layout style={{ marginLeft: 220, background: theme.bgMain, minHeight: '100vh' }}>
         {/* 顶部导航栏 */}
         <Header style={{ background: '#fff', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${theme.border}`, position: 'sticky', top: 0, zIndex: 99 }}>
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <a onClick={() => navigate('/dashboard')} style={{ color: theme.textSecondary }}>
-                <Icon type="HomeOutlined" /> 首页
-              </a>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>运营概览</Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[
+              { title: <><Icon type="HomeOutlined" /> 首页</>, onClick: () => navigate('/dashboard') },
+              { title: '运营概览' }
+            ]}
+            style={{ display: 'flex', alignItems: 'center' }}
+          />
           
           <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
             <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, padding: '4px 12px', borderRadius: 20, transition: 'background 0.3s' }}>

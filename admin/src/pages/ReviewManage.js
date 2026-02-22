@@ -199,18 +199,13 @@ const ReviewManage = () => {
           top: 0,
           zIndex: 99
         }}>
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <Button 
-                type="link" 
-                icon={<ArrowLeftOutlined />}
-                onClick={() => navigate('/dashboard')}
-              >
-                返回首页
-              </Button>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>审核管理</Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[
+              { title: <><HomeOutlined /> 首页</>, onClick: () => navigate('/dashboard') },
+              { title: '审核管理' }
+            ]}
+            style={{ display: 'flex', alignItems: 'center' }}
+          />
           <div style={{ color: '#666' }}>
             欢迎，{userInfo.username || '管理员'}
           </div>

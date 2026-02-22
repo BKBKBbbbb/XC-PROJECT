@@ -215,17 +215,13 @@ const HotelManage = () => {
           top: 0,
           zIndex: 99
         }}>
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <Button 
-                type="link" 
-                onClick={() => navigate('/dashboard')}
-              >
-                首页
-              </Button>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>{isAdmin ? '酒店管理' : '信息录入'}</Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[
+              { title: <><Icon type="HomeOutlined" /> 首页</>, onClick: () => navigate('/dashboard') },
+              { title: isAdmin ? '酒店管理' : '信息录入' }
+            ]}
+            style={{ display: 'flex', alignItems: 'center' }}
+          />
           <div style={{ color: '#666' }}>
             欢迎，{userInfo.username || '用户'}
           </div>
