@@ -4,7 +4,7 @@ import {
 } from 'antd';
 import * as Icons from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import { hotelApi } from '../utils/api';
 
 const { Header, Sider, Content } = Layout;
 
@@ -63,11 +63,8 @@ const HotelManage = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:3001/api/hotels/merchant/my', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setData(res.data);
+      const res = await hotelApi.getMyHotels();
+      setData(res);
     } catch (error) {
       message.error('获取数据失败');
     } finally {
@@ -94,10 +91,7 @@ const HotelManage = () => {
       content: '确定要删除这个酒店吗？',
       onOk: async () => {
         try {
-          const token = localStorage.getItem('token');
-          await axios.delete(`http://localhost:3001/api/hotels/${id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
+          await hotelApi.delete(id);
           message.success('删除成功');
           fetchData();
         } catch (error) {
@@ -154,7 +148,7 @@ const HotelManage = () => {
           <Button 
             type="link" 
             icon={<Icon type="EditOutlined" />} 
-            onClick={() => handleEdit(record._id)}
+            onClick={() => handleEdit(record.id)}
           >
             编辑
           </Button>
@@ -162,7 +156,7 @@ const HotelManage = () => {
             type="link" 
             danger 
             icon={<Icon type="DeleteOutlined" />} 
-            onClick={() => handleDelete(record._id)}
+            onClick={() => handleDelete(record.id)}
           >
             删除
           </Button>
@@ -250,7 +244,7 @@ const HotelManage = () => {
           <Table 
             columns={columns} 
             dataSource={data} 
-            rowKey="_id"
+            rowKey="id"
             loading={loading}
           />
         </Content>

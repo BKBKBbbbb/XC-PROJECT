@@ -25,11 +25,11 @@ const mockHotel = {
   description: '上海外滩华尔道夫酒店坐落于历史悠久的外滩黄金地带，完美的结合了极佳的地理位置、奢华舒适的住宿与外滩的标志性景观。酒店拥有百余间豪华客房及套房，细致周到 的服务为您营造出独树一帜的住宿体验。',
   facilities: ['免费WiFi', '免费停车', '游泳池', '健身房', '餐厅', '会议室', '机场接送', '24小时前台'],
   images: [
-    'https://img.zm520.com/hotel1.jpg',
-    'https://img.zm520.com/hotel2.jpg',
-    'https://img.zm520.com/hotel3.jpg',
-    'https://img.zm520.com/hotel4.jpg',
-    'https://img.zm520.com/hotel5.jpg'
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=luxury%20hotel%20exterior%20shanghai%20bund%20modern%20architecture&image_size=landscape_16_9',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=luxury%20hotel%20lobby%20grand%20chandelier%20elegant%20decor&image_size=landscape_16_9',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=luxury%20hotel%20room%20king%20bed%20city%20view&image_size=landscape_16_9',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=luxury%20hotel%20restaurant%20fine%20dining%20elegant&image_size=landscape_16_9',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=luxury%20hotel%20swimming%20pool%20rooftop%20city%20view&image_size=landscape_16_9'
   ],
   rooms: [
     {
@@ -40,7 +40,8 @@ const mockHotel = {
       maxGuests: 2,
       bedType: '大床/双床',
       price: 1888,
-      amenities: ['免费WiFi', '早餐', '迷你吧']
+      amenities: ['免费WiFi', '早餐', '迷你吧'],
+      image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=luxury%20hotel%20room%20modern%20comfortable%20king%20bed&image_size=landscape_16_9'
     },
     {
       _id: 'r2',
@@ -50,7 +51,8 @@ const mockHotel = {
       maxGuests: 2,
       bedType: '大床',
       price: 2288,
-      amenities: ['免费WiFi', '早餐', '迷你吧', '江景']
+      amenities: ['免费WiFi', '早餐', '迷你吧', '江景'],
+      image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=luxury%20hotel%20room%20with%20bund%20view%20shanghai%20river%20view&image_size=landscape_16_9'
     },
     {
       _id: 'r3',
@@ -60,7 +62,8 @@ const mockHotel = {
       maxGuests: 3,
       bedType: '大床',
       price: 3288,
-      amenities: ['免费WiFi', '早餐', '迷你吧', '江景', '客厅']
+      amenities: ['免费WiFi', '早餐', '迷你吧', '江景', '客厅'],
+      image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=luxury%20hotel%20suite%20living%20room%20bedroom%20elegant&image_size=landscape_16_9'
     },
     {
       _id: 'r4',
@@ -70,7 +73,8 @@ const mockHotel = {
       maxGuests: 4,
       bedType: '大床',
       price: 28888,
-      amenities: ['免费WiFi', '早餐', '迷你吧', '江景', '客厅', '餐厅', '管家服务']
+      amenities: ['免费WiFi', '早餐', '迷你吧', '江景', '客厅', '餐厅', '管家服务'],
+      image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=presidential%20suite%20luxury%20hotel%20grand%20living%20room%20panoramic%20view&image_size=landscape_16_9'
     }
   ]
 };
@@ -119,7 +123,7 @@ export default function Detail() {
   };
 
   const handleBack = () => {
-    router.navigateBack();
+    Taro.navigateBack();
   };
 
   const handleImageChange = (e) => {
@@ -182,14 +186,14 @@ export default function Detail() {
           <Swiper
             className="banner-swiper"
             circular
-            autoplay={false}
+            autoplay={{ interval: 3000 }}
+            duration={500}
             onChange={handleImageChange}
           >
             {(hotel.images || []).map((image, index) => (
               <SwiperItem key={index}>
                 <View className="banner-item" onClick={() => handleImagePreview(index)}>
-                  <View className="image-placeholder">
-                    <Text className="placeholder-text">{hotel.name.substring(0, 2)}</Text>
+                  <View className="banner-image" style={{ backgroundImage: `url(${image})` }}>
                   </View>
                 </View>
               </SwiperItem>
@@ -320,8 +324,7 @@ export default function Detail() {
               {displayedRooms.map((room) => (
                 <View key={room._id} className="room-item">
                   <View className="room-image">
-                    <View className="room-image-placeholder">
-                      <Text>{room.name.substring(0, 2)}</Text>
+                    <View className="room-image-placeholder" style={{ backgroundImage: `url(${room.image || hotel.images?.[0]})` }}>
                     </View>
                   </View>
                   <View className="room-info">

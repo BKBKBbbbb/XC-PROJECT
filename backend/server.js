@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const config = require('./config');
+const pool = require('./utils/db');
 
 // 引入路由
 const userRoutes = require('./routes/users');
@@ -37,8 +38,13 @@ app.use('/api/rooms', roomRoutes);
 app.use('/api/orders', orderRoutes);
 
 // 健康检查
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: '服务运行中（JSON存储）' });
+app.get('/api/health', async (req, res) => {
+  try {
+    await pool.execute('SELECT 1');
+    res.json({ status: 'ok', message: '服务运行中（MySQL存储）' });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: '数据库连接失败' });
+  }
 });
 
 // 错误处理中间件

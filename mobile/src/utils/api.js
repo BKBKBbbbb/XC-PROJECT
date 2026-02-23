@@ -1,3 +1,5 @@
+import Taro from '@tarojs/taro';
+
 const API_BASE = 'http://localhost:3001/api';
 
 const request = (url, options = {}) => {

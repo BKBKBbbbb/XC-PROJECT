@@ -10,13 +10,13 @@ router.post('/', async (req, res) => {
     const { hotelId, roomId, checkIn, checkOut, guestName, guestPhone, nights, totalPrice } = req.body;
     
     // 验证酒店
-    const hotel = hotels.findById(hotelId);
+    const hotel = await hotels.findById(hotelId);
     if (!hotel) {
       return res.status(404).json({ message: '酒店不存在' });
     }
     
     // 验证房间
-    const room = rooms.findById(roomId);
+    const room = await rooms.findById(roomId);
     if (!room || room.hotelId !== hotelId) {
       return res.status(404).json({ message: '房型不存在' });
     }
@@ -41,7 +41,7 @@ router.post('/', async (req, res) => {
     }
     
     // 创建订单
-    const order = orders.insert({
+    const order = await orders.insert({
       userId,
       hotelId,
       roomId,
@@ -52,11 +52,11 @@ router.post('/', async (req, res) => {
       guestName,
       guestPhone,
       status: 'pending',
-      createdAt: new Date().toISOString()
+      createdAt: new Date()
     });
     
     // 减少库存
-    rooms.update(roomId, { stock: room.stock - 1 });
+    await rooms.update(roomId, { stock: room.stock - 1 });
     
     res.status(201).json({
       ...order,
@@ -77,22 +77,23 @@ router.get('/', auth, async (req, res) => {
     
     if (type === 'merchant') {
       // 商户查看自己酒店的订单
-      const merchantHotels = hotels.find({ merchantId: req.user.id });
-      const hotelIds = merchantHotels.map(h => h._id);
-      orderList = orders.find().filter(o => hotelIds.includes(o.hotelId));
+      const merchantHotels = await hotels.find({ merchantId: req.user.id });
+      const hotelIds = merchantHotels.map(h => h.id);
+      const allOrders = await orders.find();
+      orderList = allOrders.filter(o => hotelIds.includes(o.hotelId));
     } else if (type === 'user' || !req.user.role) {
       // 用户查看自己的订单
-      orderList = orders.find({ userId: req.user.id });
+      orderList = await orders.find({ userId: req.user.id });
     } else {
       // 管理员查看所有订单
-      orderList = orders.find();
+      orderList = await orders.find();
     }
     
     // 关联酒店和房间信息
-    const result = orderList.map(order => {
-      const hotel = hotels.findById(order.hotelId);
-      const room = rooms.findById(order.roomId);
-      const user = order.userId ? users.findById(order.userId) : null;
+    const result = await Promise.all(orderList.map(async order => {
+      const hotel = await hotels.findById(order.hotelId);
+      const room = await rooms.findById(order.roomId);
+      const user = order.userId ? await users.findById(order.userId) : null;
       
       return {
         ...order,
@@ -100,7 +101,9 @@ router.get('/', auth, async (req, res) => {
         roomName: room ? room.name : '',
         userName: user ? user.username : '游客'
       };
-    }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }));
+    
+    result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     
     res.json(result);
   } catch (error) {
@@ -111,14 +114,14 @@ router.get('/', auth, async (req, res) => {
 // 获取订单详情
 router.get('/:id', auth, async (req, res) => {
   try {
-    const order = orders.findById(req.params.id);
+    const order = await orders.findById(req.params.id);
     if (!order) {
       return res.status(404).json({ message: '订单不存在' });
     }
     
-    const hotel = hotels.findById(order.hotelId);
-    const room = rooms.findById(order.roomId);
-    const user = order.userId ? users.findById(order.userId) : null;
+    const hotel = await hotels.findById(order.hotelId);
+    const room = await rooms.findById(order.roomId);
+    const user = order.userId ? await users.findById(order.userId) : null;
     
     res.json({
       ...order,
@@ -136,14 +139,14 @@ router.get('/:id', auth, async (req, res) => {
 router.put('/:id', auth, async (req, res) => {
   try {
     const { status } = req.body;
-    const order = orders.findById(req.params.id);
+    const order = await orders.findById(req.params.id);
     
     if (!order) {
       return res.status(404).json({ message: '订单不存在' });
     }
     
     // 权限检查
-    const hotel = hotels.findById(order.hotelId);
+    const hotel = await hotels.findById(order.hotelId);
     const isMerchant = hotel && hotel.merchantId === req.user.id;
     const isAdmin = req.user.role === 'admin';
     
@@ -165,15 +168,15 @@ router.put('/:id', auth, async (req, res) => {
     
     // 如果取消订单，恢复库存
     if (status === 'cancelled') {
-      const room = rooms.findById(order.roomId);
+      const room = await rooms.findById(order.roomId);
       if (room) {
-        rooms.update(order.roomId, { stock: room.stock + 1 });
+        await rooms.update(order.roomId, { stock: room.stock + 1 });
       }
     }
     
-    const updatedOrder = orders.update(req.params.id, { 
+    const updatedOrder = await orders.update(req.params.id, { 
       status,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date()
     });
     
     res.json(updatedOrder);
@@ -185,7 +188,7 @@ router.put('/:id', auth, async (req, res) => {
 // 取消订单（用户）
 router.post('/:id/cancel', auth, async (req, res) => {
   try {
-    const order = orders.findById(req.params.id);
+    const order = await orders.findById(req.params.id);
     
     if (!order) {
       return res.status(404).json({ message: '订单不存在' });
@@ -201,14 +204,14 @@ router.post('/:id/cancel', auth, async (req, res) => {
     }
     
     // 恢复库存
-    const room = rooms.findById(order.roomId);
+    const room = await rooms.findById(order.roomId);
     if (room) {
-      rooms.update(order.roomId, { stock: room.stock + 1 });
+      await rooms.update(order.roomId, { stock: room.stock + 1 });
     }
     
-    const updatedOrder = orders.update(req.params.id, { 
+    const updatedOrder = await orders.update(req.params.id, { 
       status: 'cancelled',
-      cancelledAt: new Date().toISOString()
+      cancelledAt: new Date()
     });
     
     res.json(updatedOrder);

@@ -1,8 +1,6 @@
 module.exports = {
   pages: [
-    'pages/index/index',
-    'pages/list/list',
-    'pages/detail/detail'
+    'pages/index/index'
   ],
   window: {
     backgroundTextStyle: 'light',

@@ -46,5 +46,9 @@
     "babel-preset-taro": "3.6.22",
     "react-refresh": "^0.11.0",
     "webpack": "^4.46.0"
-  }
+  },
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

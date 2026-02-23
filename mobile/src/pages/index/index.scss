@@ -10,82 +10,46 @@ $border-color: #e5e5e5;
 .index-page {
   min-height: 100vh;
   background-color: $bg-color;
-  padding-bottom: 140px;
+  padding-bottom: 20px;
 }
 
 // Banner
 .banner-wrapper {
   position: relative;
-  height: 360px;
-  background: linear-gradient(180deg, #ff7a00 0%, #ff4d4f 100%);
-}
-
-.banner-scroll {
-  height: 100%;
-  white-space: nowrap;
-}
-
-.banner-item {
-  display: inline-block;
-  width: 100%;
-  height: 360px;
-  padding: 0 30px;
-  box-sizing: border-box;
+  height: 300px;
+  background: linear-gradient(135deg, #ff6600 0%, #ff8533 100%);
 }
 
 .banner-image {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 100%);
-  border-radius: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 
-.banner-title-text {
-  font-size: 48px;
+.banner-title {
+  font-size: 36px;
   font-weight: bold;
   color: $white;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
   margin-bottom: 16px;
 }
 
-.banner-subtitle-text {
-  font-size: 28px;
+.banner-subtitle {
+  font-size: 24px;
   color: rgba(255,255,255,0.9);
-}
-
-.banner-dots {
-  position: absolute;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 12px;
-}
-
-.dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 6px;
-  background: rgba(255,255,255,0.5);
-  transition: all 0.3s ease;
-  
-  &.active {
-    width: 24px;
-    background: $white;
-  }
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
 // 搜索面板
 .search-panel {
-  margin: -80px 24px 0;
+  margin: -50px 16px 0;
   background: $white;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-  padding: 32px 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  padding: 20px;
   position: relative;
   z-index: 10;
 }
@@ -93,7 +57,7 @@ $border-color: #e5e5e5;
 .search-row {
   display: flex;
   align-items: center;
-  padding: 16px 0;
+  padding: 12px 0;
 }
 
 .search-item {
@@ -101,43 +65,15 @@ $border-color: #e5e5e5;
   
   .label {
     display: block;
-    font-size: 24px;
+    font-size: 16px;
     color: $text-light;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
   }
   
   .value {
-    font-size: 32px;
+    font-size: 20px;
     color: $text-primary;
     font-weight: 500;
-  }
-}
-
-.city-item {
-  .value-wrapper {
-    display: flex;
-    align-items: center;
-  }
-  
-  .arrow {
-    margin-left: 8px;
-    font-size: 20px;
-    color: $text-light;
-  }
-}
-
-.keyword-row {
-  padding: 0;
-}
-
-.keyword-item {
-  flex: 1;
-  
-  .keyword-input {
-    font-size: 32px;
-    color: $text-primary;
-    padding: 8px 0;
-    width: 100%;
   }
 }
 
@@ -146,201 +82,52 @@ $border-color: #e5e5e5;
   background: $border-color;
 }
 
-.date-row {
-  .search-item {
-    flex: 1;
-  }
-}
-
 .date-arrow {
-  padding: 0 24px;
+  padding: 0 16px;
   text-align: center;
   
   text {
-    font-size: 24px;
+    font-size: 16px;
     color: $text-light;
     background: $bg-color;
-    padding: 8px 16px;
-    border-radius: 8px;
+    padding: 4px 8px;
+    border-radius: 4px;
   }
 }
 
-.filter-row {
-  display: flex;
-  align-items: center;
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid $border-color;
-}
-
-.filter-btn {
-  display: flex;
-  align-items: center;
-  padding: 12px 20px;
-  background: $bg-color;
-  border-radius: 8px;
-  position: relative;
-  margin-right: 16px;
-  
-  text {
-    font-size: 24px;
-    color: $text-secondary;
-  }
-  
-  .filter-icon {
-    margin-right: 8px;
-  }
-}
-
-.filter-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 12px;
-  height: 12px;
-  background: $primary-color;
-  border-radius: 50%;
-}
-
-.tags-row {
-  flex: 1;
-  display: flex;
-  gap: 12px;
-}
-
-.tag-item {
-  padding: 10px 16px;
-  background: $bg-color;
-  border-radius: 20px;
-  border: 2px solid transparent;
-  
-  text {
-    font-size: 22px;
-    color: $text-secondary;
-  }
-  
-  &.active {
-    background: rgba(255, 102, 0, 0.1);
-    border-color: $primary-color;
-    
-    text {
-      color: $primary-color;
-    }
-  }
-}
-
-// 筛选面板
-.filter-panel {
-  margin: 16px 24px;
-  background: $white;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-}
-
-.filter-section {
-  margin-bottom: 24px;
-  
-  &:last-of-type {
-    margin-bottom: 0;
-  }
-}
-
-.filter-title {
-  margin-bottom: 16px;
-  
-  text {
-    font-size: 28px;
-    color: $text-primary;
-    font-weight: bold;
-  }
-}
-
-.filter-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.filter-option {
-  display: flex;
-  align-items: center;
-  padding: 16px 24px;
-  background: $bg-color;
-  border-radius: 12px;
-  border: 2px solid transparent;
-  
-  text {
-    font-size: 26px;
-    color: $text-secondary;
-  }
-  
-  .option-name {
-    margin-left: 8px;
-  }
-  
-  &.active {
-    background: rgba(255, 102, 0, 0.1);
-    border-color: $primary-color;
-    
-    text {
-      color: $primary-color;
-    }
-  }
-}
-
-.price-options {
-  .price-option {
-    padding: 16px 32px;
-  }
-}
-
-.filter-actions {
-  display: flex;
-  gap: 16px;
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid $border-color;
-}
-
-.clear-btn, .confirm-btn {
-  flex: 1;
-  padding: 20px;
-  border-radius: 12px;
-  text-align: center;
-  
-  text {
-    font-size: 28px;
-    font-weight: bold;
-  }
-}
-
-.clear-btn {
-  background: $bg-color;
-  
-  text {
-    color: $text-secondary;
-  }
-}
-
-.confirm-btn {
+.search-btn {
+  width: 100%;
+  height: 48px;
   background: linear-gradient(135deg, $primary-color 0%, #ff8533 100%);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  transition: all 0.2s ease;
   
-  text {
+  .btn-text {
+    font-size: 20px;
     color: $white;
+    font-weight: bold;
+  }
+  
+  &:active {
+    transform: scale(0.98);
+    opacity: 0.9;
   }
 }
 
-// 快捷城市
+// 热门城市
 .city-section {
-  margin: 32px 24px 0;
+  margin: 24px 16px 0;
 }
 
 .section-title {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   
-  .title-text {
-    font-size: 28px;
+  text {
+    font-size: 20px;
     color: $text-secondary;
     font-weight: 500;
   }
@@ -349,277 +136,26 @@ $border-color: #e5e5e5;
 .city-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 12px;
 }
 
 .city-item {
-  width: calc(25% - 15px);
-  padding: 20px 0;
+  width: calc(25% - 9px);
+  padding: 12px 0;
   background: $white;
-  border-radius: 12px;
+  border-radius: 8px;
   text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   transition: all 0.2s ease;
   
-  &.active {
-    background: $primary-color;
-    
-    .city-name {
-      color: $white;
-    }
+  &:active {
+    transform: scale(0.98);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   }
   
   .city-name {
-    font-size: 26px;
+    font-size: 16px;
     color: $text-primary;
     font-weight: 500;
-  }
-}
-
-// 搜索按钮
-.search-btn-wrapper {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 20px 24px;
-  padding-bottom: calc(20px + env(safe-area-inset-bottom));
-  background: $white;
-  box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
-}
-
-.search-btn {
-  width: 100%;
-  height: 96px;
-  background: linear-gradient(135deg, #ff6600 0%, #ff8533 100%);
-  border-radius: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  .btn-text {
-    font-size: 34px;
-    color: $white;
-    font-weight: bold;
-  }
-}
-
-// 通用弹窗遮罩
-.picker-mask {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 100;
-  display: flex;
-  align-items: flex-end;
-}
-
-// 城市选择弹窗
-.picker-content {
-  width: 100%;
-  max-height: 70vh;
-  background: $white;
-  border-radius: 24px 24px 0 0;
-  overflow: hidden;
-}
-
-.picker-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 32px;
-  border-bottom: 1px solid $border-color;
-  
-  .picker-title {
-    font-size: 32px;
-    color: $text-primary;
-    font-weight: bold;
-  }
-  
-  .picker-close {
-    font-size: 48px;
-    color: $text-light;
-    line-height: 1;
-  }
-}
-
-.picker-list {
-  height: 600px;
-  padding: 0 32px;
-}
-
-.picker-section-title {
-  font-size: 26px;
-  color: $text-light;
-  padding: 24px 0 16px;
-  font-weight: bold;
-}
-
-.picker-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 28px 0;
-  border-bottom: 1px solid $border-color;
-  
-  text {
-    font-size: 30px;
-    color: $text-primary;
-  }
-  
-  .check-icon {
-    color: $primary-color;
-    font-size: 28px;
-  }
-  
-  &.active text {
-    color: $primary-color;
-    font-weight: bold;
-  }
-}
-
-// 日期选择弹窗
-.date-picker-content {
-  width: 100%;
-  max-height: 80vh;
-  background: $white;
-  border-radius: 24px 24px 0 0;
-  overflow: hidden;
-}
-
-.date-tabs {
-  display: flex;
-  padding: 0 32px;
-  border-bottom: 1px solid $border-color;
-}
-
-.date-tab {
-  flex: 1;
-  padding: 24px 0;
-  text-align: center;
-  position: relative;
-  
-  text {
-    font-size: 28px;
-    color: $text-secondary;
-  }
-  
-  &.active {
-    text {
-      color: $primary-color;
-      font-weight: bold;
-    }
-    
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 40px;
-      height: 4px;
-      background: $primary-color;
-      border-radius: 2px;
-    }
-  }
-}
-
-// 日历
-.calendar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 24px 32px;
-}
-
-.calendar-nav {
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  text {
-    font-size: 40px;
-    color: $text-primary;
-  }
-}
-
-.calendar-month {
-  font-size: 32px;
-  color: $text-primary;
-  font-weight: bold;
-}
-
-.calendar-weekdays {
-  display: flex;
-  padding: 0 16px;
-}
-
-.weekday {
-  flex: 1;
-  text-align: center;
-  padding: 16px 0;
-  
-  text {
-    font-size: 24px;
-    color: $text-light;
-    font-weight: bold;
-  }
-}
-
-.calendar-dates {
-  display: flex;
-  flex-wrap: wrap;
-  padding: 0 16px 32px;
-}
-
-.calendar-date {
-  width: calc(100% / 7);
-  text-align: center;
-  padding: 16px 0;
-  
-  text {
-    font-size: 30px;
-    color: $text-primary;
-  }
-  
-  &.other-month text {
-    color: $text-light;
-  }
-  
-  &.disabled {
-    text {
-      color: $text-light;
-    }
-  }
-  
-  &.checkin, &.checkout {
-    background: $primary-color;
-    border-radius: 50%;
-    
-    text {
-      color: $white;
-      font-weight: bold;
-    }
-  }
-  
-  &.checkin {
-    border-radius: 50% 0 0 50%;
-  }
-  
-  &.checkout {
-    border-radius: 0 50% 50% 0;
-  }
-  
-  &.range {
-    background: rgba(255, 102, 0, 0.1);
-    
-    text {
-      color: $primary-color;
-    font-weight: bold;
-    }
   }
 }

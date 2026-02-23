@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Form, Input, Button, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import { userApi } from '../utils/api';
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
@@ -11,13 +11,14 @@ const Login = () => {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:3001/api/users/login', values);
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
+      const res = await userApi.login(values);
+      // axios 响应拦截器已返回 response.data，直接使用 res
+      localStorage.setItem('token', res.token);
+      localStorage.setItem('user', JSON.stringify(res.user));
       message.success('登录成功');
       
       // 根据用户角色跳转到不同页面
-      const userRole = res.data.user.role;
+      const userRole = res.user.role;
       if (userRole === 'admin') {
         // 管理员跳转到审核列表页
         navigate('/review');

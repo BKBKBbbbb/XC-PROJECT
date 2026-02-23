@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
   try {
     const { city, star, page = 1, limit = 10, minPrice, maxPrice, keyword } = req.query;
     
-    let hotelList = hotels.find({ status: 'published' });
+    let hotelList = await hotels.find({ status: 'published' });
     
     // 城市筛选
     if (city) {
@@ -37,19 +37,19 @@ router.get('/', async (req, res) => {
       const min = parseFloat(minPrice) || 0;
       const max = parseFloat(maxPrice) || Infinity;
       
-      hotelList = hotelList.filter(h => {
-        const hotelRooms = rooms.find({ hotelId: h._id });
+      hotelList = hotelList.filter(async h => {
+        const hotelRooms = await rooms.find({ hotelId: h.id });
         if (hotelRooms.length === 0) return false;
         const minRoomPrice = Math.min(...hotelRooms.map(r => r.price));
         return minRoomPrice >= min && minRoomPrice <= max;
       });
       
       // 添加最低价信息
-      hotelList = hotelList.map(h => {
-        const hotelRooms = rooms.find({ hotelId: h._id });
+      hotelList = await Promise.all(hotelList.map(async h => {
+        const hotelRooms = await rooms.find({ hotelId: h.id });
         const minPrice = hotelRooms.length > 0 ? Math.min(...hotelRooms.map(r => r.price)) : 0;
         return { ...h, minPrice };
-      });
+      }));
     }
     
     // 分页
@@ -73,7 +73,7 @@ router.get('/', async (req, res) => {
 // 获取我的酒店列表（商户）
 router.get('/merchant/my', auth, async (req, res) => {
   try {
-    const hotelList = hotels.find({ merchantId: req.user.id });
+    const hotelList = await hotels.find({ merchantId: req.user.id });
     res.json(hotelList);
   } catch (error) {
     res.status(500).json({ message: '服务器错误', error: error.message });
@@ -83,7 +83,7 @@ router.get('/merchant/my', auth, async (req, res) => {
 // 创建酒店（商户）
 router.post('/', auth, async (req, res) => {
   try {
-    const hotel = hotels.insert({
+    const hotel = await hotels.insert({
       ...req.body,
       merchantId: req.user.id,
       status: 'draft'
@@ -106,7 +106,7 @@ router.get('/admin/all', auth, async (req, res) => {
     
     const { status, page = 1, limit = 10 } = req.query;
     
-    let hotelList = hotels.find();
+    let hotelList = await hotels.find();
     
     if (status) {
       hotelList = hotelList.filter(h => h.status === status);
@@ -114,13 +114,15 @@ router.get('/admin/all', auth, async (req, res) => {
     
     // 关联商户信息
     const { users } = require('../utils/store');
-    hotelList = hotelList.map(h => {
-      const merchant = users.findById(h.merchantId);
+    hotelList = await Promise.all(hotelList.map(async h => {
+      const merchant = await users.findById(h.merchantId);
       return {
         ...h,
         merchantName: merchant ? merchant.username : '未知'
       };
-    }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }));
+    
+    hotelList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     
     // 分页
     const total = hotelList.length;
@@ -147,15 +149,15 @@ router.put('/:id/review', auth, async (req, res) => {
     
     const { status, reviewNote } = req.body;
     
-    const hotel = hotels.findById(req.params.id);
+    const hotel = await hotels.findById(req.params.id);
     if (!hotel) {
       return res.status(404).json({ message: '酒店不存在' });
     }
     
-    const updatedHotel = hotels.update(req.params.id, {
+    const updatedHotel = await hotels.update(req.params.id, {
       status,
       reviewNote,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date()
     });
     
     res.json(updatedHotel);
@@ -171,15 +173,15 @@ router.put('/:id/publish', auth, async (req, res) => {
       return res.status(403).json({ message: '无权限操作' });
     }
     
-    const hotel = hotels.findById(req.params.id);
+    const hotel = await hotels.findById(req.params.id);
     if (!hotel) {
       return res.status(404).json({ message: '酒店不存在' });
     }
     
-    const updatedHotel = hotels.update(req.params.id, {
+    const updatedHotel = await hotels.update(req.params.id, {
       status: 'published',
-      publishedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      publishedAt: new Date(),
+      updatedAt: new Date()
     });
     
     res.json(updatedHotel);
@@ -192,7 +194,7 @@ router.put('/:id/publish', auth, async (req, res) => {
 router.put('/:id/offline', auth, async (req, res) => {
   try {
     // 商户和管理员都可以下线
-    const hotel = hotels.findById(req.params.id);
+    const hotel = await hotels.findById(req.params.id);
     if (!hotel) {
       return res.status(404).json({ message: '酒店不存在' });
     }
@@ -201,10 +203,10 @@ router.put('/:id/offline', auth, async (req, res) => {
       return res.status(403).json({ message: '无权限操作' });
     }
     
-    const updatedHotel = hotels.update(req.params.id, {
+    const updatedHotel = await hotels.update(req.params.id, {
       status: 'offline',
-      offlineAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      offlineAt: new Date(),
+      updatedAt: new Date()
     });
     
     res.json(updatedHotel);
@@ -218,13 +220,13 @@ router.put('/:id/offline', auth, async (req, res) => {
 // 获取酒店详情（公开）
 router.get('/:id', async (req, res) => {
   try {
-    const hotel = hotels.findById(req.params.id);
+    const hotel = await hotels.findById(req.params.id);
     if (!hotel) {
       return res.status(404).json({ message: '酒店不存在' });
     }
     
     // 关联房间信息
-    const hotelRooms = rooms.find({ hotelId: hotel._id });
+    const hotelRooms = await rooms.find({ hotelId: hotel.id });
     
     res.json({
       ...hotel,
@@ -239,7 +241,7 @@ router.get('/:id', async (req, res) => {
 // 更新酒店（商户只能修改自己的）
 router.put('/:id', auth, async (req, res) => {
   try {
-    const hotel = hotels.findById(req.params.id);
+    const hotel = await hotels.findById(req.params.id);
     
     if (!hotel) {
       return res.status(404).json({ message: '酒店不存在' });
@@ -250,9 +252,9 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(403).json({ message: '无权限修改' });
     }
     
-    const updatedHotel = hotels.update(req.params.id, {
+    const updatedHotel = await hotels.update(req.params.id, {
       ...req.body,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date()
     });
     
     res.json(updatedHotel);
@@ -264,7 +266,7 @@ router.put('/:id', auth, async (req, res) => {
 // 删除酒店
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const hotel = hotels.findById(req.params.id);
+    const hotel = await hotels.findById(req.params.id);
     
     if (!hotel) {
       return res.status(404).json({ message: '酒店不存在' });
@@ -274,7 +276,7 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(403).json({ message: '无权限删除' });
     }
     
-    hotels.remove(req.params.id);
+    await hotels.remove(req.params.id);
     res.json({ message: '删除成功' });
   } catch (error) {
     res.status(500).json({ message: '服务器错误', error: error.message });

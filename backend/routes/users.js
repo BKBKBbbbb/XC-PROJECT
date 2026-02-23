@@ -12,7 +12,7 @@ router.post('/register', async (req, res) => {
     const { username, password, role } = req.body;
     
     // 检查用户是否存在
-    const existingUser = users.findOne({ username });
+    const existingUser = await users.findOne({ username });
     if (existingUser) {
       return res.status(400).json({ message: '用户名已存在' });
     }
@@ -21,7 +21,7 @@ router.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     
     // 创建用户
-    const user = users.insert({
+    const user = await users.insert({
       username,
       password: hashedPassword,
       role: role || 'merchant',
@@ -40,7 +40,7 @@ router.post('/login', async (req, res) => {
     const { username, password } = req.body;
     
     // 查找用户
-    const user = users.findOne({ username });
+    const user = await users.findOne({ username });
     if (!user) {
       return res.status(400).json({ message: '用户名或密码错误' });
     }
@@ -53,7 +53,7 @@ router.post('/login', async (req, res) => {
     
     // 生成 Token
     const token = jwt.sign(
-      { id: user._id, username: user.username, role: user.role },
+      { id: user.id, username: user.username, role: user.role },
       config.jwtSecret,
       { expiresIn: config.jwtExpire }
     );
@@ -61,7 +61,7 @@ router.post('/login', async (req, res) => {
     res.json({
       token,
       user: {
-        id: user._id,
+        id: user.id,
         username: user.username,
         role: user.role,
         nickname: user.nickname
@@ -81,7 +81,7 @@ router.get('/me', async (req, res) => {
     }
     
     const decoded = jwt.verify(token, config.jwtSecret);
-    const user = users.findById(decoded.id);
+    const user = await users.findById(decoded.id);
     
     if (!user) {
       return res.status(404).json({ message: '用户不存在' });

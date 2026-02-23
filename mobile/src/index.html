@@ -6,6 +6,57 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <title>易宿酒店</title>
+  <style>
+    /* ============================================
+       全局重置 - 修复横向滚动条和居中问题
+       ============================================ */
+    html, body { 
+      width: 100%; 
+      max-width: 100%; 
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+      position: relative;
+      left: 0;
+      right: 0;
+    }
+    
+    * {
+      margin: 0 !important;
+      padding: 0 !important;
+      box-sizing: border-box;
+    }
+    
+    #app { 
+      width: 100% !important; 
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    /* Taro H5 路由容器 */
+    .taro-router {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      position: relative !important;
+      left: 0 !important;
+      right: 0 !important;
+    }
+    
+    /* Taro 页面容器 */
+    .taro-page {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      position: relative !important;
+      left: 0 !important;
+      right: 0 !important;
+    }
+  </style>
   <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>

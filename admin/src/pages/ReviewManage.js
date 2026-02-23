@@ -132,7 +132,7 @@ const ReviewManage = () => {
               <Button 
                 type="link" 
                 icon={<CheckCircleOutlined />}
-                onClick={() => handleAudit(record._id, 'published')}
+                onClick={() => handleAudit(record.id, 'published')}
               >
                 通过
               </Button>
@@ -140,7 +140,7 @@ const ReviewManage = () => {
                 type="link" 
                 danger
                 icon={<CloseCircleOutlined />}
-                onClick={() => handleAudit(record._id, 'rejected')}
+                onClick={() => handleAudit(record.id, 'rejected')}
               >
                 拒绝
               </Button>
@@ -150,7 +150,7 @@ const ReviewManage = () => {
             type="link" 
             danger 
             icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record._id)}
+            onClick={() => handleDelete(record.id)}
           >
             删除
           </Button>
@@ -225,7 +225,7 @@ const ReviewManage = () => {
           <Table 
             columns={columns} 
             dataSource={mockData} 
-            rowKey="_id"
+            rowKey="id"
             loading={loading}
           />
         </Content>

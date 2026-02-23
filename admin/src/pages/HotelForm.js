@@ -9,7 +9,7 @@ import {
   DeleteOutlined, SaveOutlined, SyncOutlined
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import { hotelApi } from '../utils/api';
 
 const { Header, Sider, Content } = Layout;
 const { Option } = Select;
@@ -37,11 +37,8 @@ const HotelForm = () => {
 
   const fetchHotel = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:3001/api/hotels/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const hotelData = res.data;
+      const res = await hotelApi.get(id);
+      const hotelData = res;
       
       // 处理自定义字段
       if (hotelData.customFields) {
@@ -50,7 +47,7 @@ const HotelForm = () => {
       
       form.setFieldsValue(hotelData);
     } catch (error) {
-      message.error('获取酒店信息失败');
+      message.error('获取酒店信息失败: ' + (error.message || '未知错误'));
     }
   };
 
@@ -66,11 +63,9 @@ const HotelForm = () => {
       const token = localStorage.getItem('token');
       
       if (isEdit) {
-        await axios.put(`http://localhost:3001/api/hotels/${id}`, {
+        await hotelApi.update(id, {
           ...values,
           customFields
-        }, {
-          headers: { Authorization: `Bearer ${token}` }
         });
       }
       
@@ -95,14 +90,10 @@ const HotelForm = () => {
       };
       
       if (isEdit) {
-        await axios.put(`http://localhost:3001/api/hotels/${id}`, submitData, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await hotelApi.update(id, submitData);
         message.success('更新成功');
       } else {
-        await axios.post('http://localhost:3001/api/hotels', submitData, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await hotelApi.create(submitData);
         message.success('创建成功');
       }
       navigate('/hotel');

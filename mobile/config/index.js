@@ -3,7 +3,7 @@ const path = require('path');
 const config = {
   projectName: 'yisu-mobile',
   date: '2026-2-21',
-  designWidth: 750,
+  designWidth: 375,
   deviceRatio: {
     375: 2 / 1,
     640: 1,
@@ -30,8 +30,7 @@ const config = {
   },
   webpackChain(chain) {
     // 排除 .config.js 文件不被 babel-loader 处理
-    chain.module.rule('js').exclude.add(path.resolve(__dirname, 'src/app.config.js'));
-    chain.module.rule('js').exclude.add(path.resolve(__dirname, 'src/pages'));
+    chain.module.rule('js').exclude.add(path.resolve(__dirname, '../src/app.config.js'));
     return chain;
   }
 };

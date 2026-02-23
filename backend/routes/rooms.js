@@ -11,19 +11,19 @@ router.get('/', async (req, res) => {
     
     let roomList;
     if (hotelId) {
-      roomList = rooms.find({ hotelId });
+      roomList = await rooms.find({ hotelId });
     } else {
-      roomList = rooms.find();
+      roomList = await rooms.find();
     }
     
     // 关联酒店信息
-    const result = roomList.map(room => {
-      const hotel = hotels.findById(room.hotelId);
+    const result = await Promise.all(roomList.map(async room => {
+      const hotel = await hotels.findById(room.hotelId);
       return {
         ...room,
         hotelName: hotel ? hotel.name : ''
       };
-    });
+    }));
     
     res.json(result);
   } catch (error) {
@@ -34,12 +34,12 @@ router.get('/', async (req, res) => {
 // 获取单个房间详情
 router.get('/:id', async (req, res) => {
   try {
-    const room = rooms.findById(req.params.id);
+    const room = await rooms.findById(req.params.id);
     if (!room) {
       return res.status(404).json({ message: '房间不存在' });
     }
     
-    const hotel = hotels.findById(room.hotelId);
+    const hotel = await hotels.findById(room.hotelId);
     res.json({
       ...room,
       hotelName: hotel ? hotel.name : ''
@@ -55,7 +55,7 @@ router.post('/', auth, async (req, res) => {
     const { hotelId, name, price, bedType, capacity, stock, images } = req.body;
     
     // 检查酒店是否存在
-    const hotel = hotels.findById(hotelId);
+    const hotel = await hotels.findById(hotelId);
     if (!hotel) {
       return res.status(404).json({ message: '酒店不存在' });
     }
@@ -65,7 +65,7 @@ router.post('/', auth, async (req, res) => {
       return res.status(403).json({ message: '无权限为该酒店添加房间' });
     }
     
-    const room = rooms.insert({
+    const room = await rooms.insert({
       hotelId,
       name,
       price: parseFloat(price),
@@ -84,18 +84,18 @@ router.post('/', auth, async (req, res) => {
 // 更新房间
 router.put('/:id', auth, async (req, res) => {
   try {
-    const room = rooms.findById(req.params.id);
+    const room = await rooms.findById(req.params.id);
     if (!room) {
       return res.status(404).json({ message: '房间不存在' });
     }
     
     // 检查酒店权限
-    const hotel = hotels.findById(room.hotelId);
+    const hotel = await hotels.findById(room.hotelId);
     if (hotel.merchantId !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ message: '无权限修改' });
     }
     
-    const updatedRoom = rooms.update(req.params.id, req.body);
+    const updatedRoom = await rooms.update(req.params.id, req.body);
     res.json(updatedRoom);
   } catch (error) {
     res.status(500).json({ message: '服务器错误', error: error.message });
@@ -105,18 +105,18 @@ router.put('/:id', auth, async (req, res) => {
 // 删除房间
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const room = rooms.findById(req.params.id);
+    const room = await rooms.findById(req.params.id);
     if (!room) {
       return res.status(404).json({ message: '房间不存在' });
     }
     
     // 检查酒店权限
-    const hotel = hotels.findById(room.hotelId);
+    const hotel = await hotels.findById(room.hotelId);
     if (hotel.merchantId !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ message: '无权限删除' });
     }
     
-    rooms.remove(req.params.id);
+    await rooms.remove(req.params.id);
     res.json({ message: '删除成功' });
   } catch (error) {
     res.status(500).json({ message: '服务器错误', error: error.message });

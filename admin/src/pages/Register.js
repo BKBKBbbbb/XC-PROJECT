@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Form, Input, Button, Radio, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import { userApi } from '../utils/api';
 
 const Register = () => {
   const [loading, setLoading] = useState(false);
@@ -11,7 +11,7 @@ const Register = () => {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:3001/api/users/register', {
+      const res = await userApi.register({
         username: values.username,
         password: values.password,
         role: values.role
