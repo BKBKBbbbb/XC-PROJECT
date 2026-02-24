@@ -1,26 +1,54 @@
-# node_modules
+# 依赖目录
 node_modules/
+**/node_modules/
 
-# 环境变量
+# 环境变量与密钥
 .env
 .env.local
+.env.*.local
+.env.development
+.env.production
+*.pem
 
-# IDE
+# IDE 与编辑器
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
 # 系统文件
 .DS_Store
 Thumbs.db
+Desktop.ini
 
 # 日志
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
 
 # 临时文件
 *.tmp
+*.temp
 temp/
+tmp/
+.cache/
 
-# Taro构建产物
+# 构建产物
+admin/build/
 mobile/dist/
+**/dist/
+**/build/
+*.tsbuildinfo
 
+# 测试与覆盖率
+coverage/
+.nyc_output/
+*.lcov
+
+# 调试与运行时
+.parcel-cache/
+.eslintcache
+.stylelintcache

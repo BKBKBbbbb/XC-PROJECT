@@ -2,6 +2,7 @@
   "name": "admin",
   "version": "1.0.0",
   "private": true,
+  "proxy": "http://localhost:3001",
   "description": "易宿酒店预订平台 - PC管理端",
   "scripts": {
     "start": "react-scripts start",

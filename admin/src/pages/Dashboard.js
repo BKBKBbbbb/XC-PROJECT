@@ -1,36 +1,8 @@
-import React, { useState } from 'react';
-import { 
-  Layout, Menu, Card, Row, Col, Statistic, Breadcrumb, Avatar, Dropdown 
-} from 'antd';
-import * as Icons from '@ant-design/icons';
-import { useNavigate, useLocation } from 'react-router-dom';
-
-const { Header, Sider, Content } = Layout;
-
-// 创建图标组件的辅助函数
-const Icon = ({ type }) => {
-  const IconComponent = Icons[type];
-  return IconComponent ? <IconComponent /> : null;
-};
-
-// 主题色配置
-const theme = {
-  primary: '#00B42A',
-  primaryLight: '#E8FFEA',
-  warning: '#FF7D00',
-  warningBg: '#FFF7E6',
-  success: '#00B42A',
-  successBg: '#E8FFEA',
-  error: '#F53F3F',
-  bgMain: '#F5F7FA',
-  bgCard: '#FFFFFF',
-  textPrimary: '#1D2129',
-  textSecondary: '#4E5969',
-  textTertiary: '#86909C',
-  border: '#E5E6EB',
-  siderBg: '#1D2129',
-  siderSelected: '#00B42A',
-};
+import React from 'react';
+import { Card, Row, Col, Menu } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import { AppLayout, Icon, StatCard, theme } from '../components';
+import { getMenuItems } from '../utils/menuConfig';
 
 // 模拟数据
 const mockStats = {
@@ -51,98 +23,15 @@ const recentReviews = [
   { id: 3, hotel: '杭州西湖四季', user: '王五', rating: 5, content: '环境优雅，下次还来', status: 'published' },
 ];
 
-// 格式化金额（千位分隔符）
-const formatMoney = (num) => {
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-};
-
-// 卡片组件
-const StatCard = ({ title, value, suffix, prefix, color, subText, onClick, isPending }) => (
-  <Card
-    hoverable={!!onClick}
-    onClick={onClick}
-    style={{ 
-      borderRadius: 8,
-      boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.05)',
-      cursor: onClick ? 'pointer' : 'default',
-      transition: 'all 0.3s ease',
-      border: isPending ? `2px solid ${theme.warning}` : '1px solid #fff',
-    }}
-    styles={{ body: { padding: '20px 24px' } }}
-  >
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 14, color: theme.textTertiary, marginBottom: 8 }}>
-          {title}
-        </div>
-        <div style={{ fontSize: 28, fontWeight: 700, color: color || theme.textPrimary, lineHeight: 1.2 }}>
-          {formatMoney(value)}
-        </div>
-        {suffix && (
-          <div style={{ fontSize: 12, color: theme.textTertiary, marginTop: 4 }}>
-            {suffix}
-          </div>
-        )}
-        {subText && (
-          <div style={{ 
-            fontSize: 12, 
-            marginTop: 8,
-            color: subText.startsWith('↑') ? theme.error : theme.success,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2
-          }}>
-            {subText.startsWith('↑') ? <Icon type="ArrowUpOutlined" /> : <Icon type="ArrowDownOutlined" />}
-            {subText} 较昨日
-          </div>
-        )}
-      </div>
-      <div style={{ 
-        width: 48, 
-        height: 48, 
-        borderRadius: 8, 
-        background: '#F5F7FA',
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        color: theme.textTertiary,
-        fontSize: 22
-      }}>
-        {prefix}
-      </div>
-    </div>
-  </Card>
-);
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
   const isAdmin = userInfo.role === 'admin';
   const username = userInfo.username || 'admin';
 
-  const menuItems = [
-    {
-      key: '/dashboard',
-      icon: <Icon type="DashboardOutlined" />,
-      label: '运营概览',
-    },
-    {
-      key: '/hotel',
-      icon: <Icon type="BankOutlined" />,
-      label: isAdmin ? '酒店管理' : '信息录入',
-    },
-    ...(isAdmin ? [{
-      key: '/review',
-      icon: <Icon type="AuditOutlined" />,
-      label: '审核管理',
-    }] : []),
-  ];
-
-  const handleMenuClick = (key) => {
-    navigate(key);
-  };
+  const menuItems = getMenuItems(isAdmin, navigate);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -165,6 +54,15 @@ const Dashboard = () => {
     },
   ];
 
+  const bottomMenuItems = [
+    { 
+      key: 'logout', 
+      icon: <Icon type="LogoutOutlined" />, 
+      label: '退出登录', 
+      onClick: handleLogout 
+    }
+  ];
+
   const getStatusTag = (status) => {
     const statusMap = {
       pending: { text: '待审核', color: theme.warning, bg: theme.warningBg },
@@ -180,56 +78,15 @@ const Dashboard = () => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      {/* 左侧导航栏 */}
-      <Sider width={220} style={{ background: theme.siderBg, position: 'fixed', height: '100vh', left: 0, top: 0, zIndex: 100 }}>
-        <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-          <span style={{ color: '#fff', fontSize: 20, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Icon type="HomeOutlined" />
-            易宿后台
-          </span>
-        </div>
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          items={menuItems}
-          onClick={({ key }) => handleMenuClick(key)}
-          style={{ background: 'transparent', borderRight: 0, marginTop: 8 }}
-        />
-        <div style={{ position: 'absolute', bottom: 20, width: '100%' }}>
-          <Menu
-            theme="dark"
-            mode="inline"
-            items={[{ key: 'logout', icon: <Icon type="LogoutOutlined" />, label: '退出登录', onClick: handleLogout }]}
-            style={{ background: 'transparent', borderRight: 0 }}
-          />
-        </div>
-      </Sider>
-      
-      {/* 主内容区 */}
-      <Layout style={{ marginLeft: 220, background: theme.bgMain, minHeight: '100vh' }}>
-        {/* 顶部导航栏 */}
-        <Header style={{ background: '#fff', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${theme.border}`, position: 'sticky', top: 0, zIndex: 99 }}>
-          <Breadcrumb
-            items={[
-              { title: <><Icon type="HomeOutlined" /> 首页</>, onClick: () => navigate('/dashboard') },
-              { title: '运营概览' }
-            ]}
-            style={{ display: 'flex', alignItems: 'center' }}
-          />
-          
-          <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
-            <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, padding: '4px 12px', borderRadius: 20, transition: 'background 0.3s' }}>
-              <Avatar style={{ backgroundColor: theme.primary }} icon={<Icon type="UserOutlined" />} />
-              <span style={{ color: theme.textPrimary, fontWeight: 500 }}>{username}</span>
-              <Icon type="DownOutlined" style={{ color: theme.textTertiary, fontSize: 12 }} />
-            </div>
-          </Dropdown>
-        </Header>
-        
-        {/* 内容区域 */}
-        <Content style={{ padding: 24, minHeight: 'calc(100vh - 64px)' }}>
+    <AppLayout
+      menuItems={menuItems}
+      bottomMenuItems={bottomMenuItems}
+      breadcrumbItems={[{ title: '运营概览' }]}
+      userMenuItems={userMenuItems}
+      username={username}
+      sidebarTheme="dark"
+      contentStyle={{ padding: 24, minHeight: 'calc(100vh - 64px)' }}
+    >
           {/* 顶部欢迎条 - 精简版 */}
           {mockStats.pendingCount > 0 && isAdmin && (
             <div style={{ background: theme.primaryLight, borderRadius: 8, padding: '12px 20px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8, border: `1px solid ${theme.primary}30` }}>
@@ -307,9 +164,7 @@ const Dashboard = () => {
               ))
             )}
           </Card>
-        </Content>
-      </Layout>
-    </Layout>
+    </AppLayout>
   );
 };
 

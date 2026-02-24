@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:3001/api';
+// 开发环境使用相对路径走 proxy，生产环境需配置实际 API 地址
+const API_BASE = process.env.REACT_APP_API_URL || '/api';
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -47,7 +48,19 @@ export const hotelApi = {
   update: (id, data) => api.put(`/hotels/${id}`, data),
   delete: (id) => api.delete(`/hotels/${id}`),
   getMyHotels: () => api.get('/hotels/merchant/my'),
+  getAllHotels: (params) => api.get('/hotels/admin/all', { params }),
   review: (id, data) => api.put(`/hotels/${id}/review`, data),
+  offline: (id) => api.put(`/hotels/${id}/offline`),
+  restore: (id) => api.put(`/hotels/${id}/restore`),
+};
+
+// 评论 API
+export const commentApi = {
+  list: (params) => api.get('/comments', { params }),
+  approve: (id) => api.put(`/comments/${id}/approve`),
+  reject: (id, reviewNote) => api.put(`/comments/${id}/reject`, { reviewNote }),
+  delete: (id) => api.put(`/comments/${id}/delete`),
+  restore: (id) => api.put(`/comments/${id}/restore`),
 };
 
 export default api;

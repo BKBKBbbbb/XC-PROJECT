@@ -20,8 +20,8 @@ const Login = () => {
       // 根据用户角色跳转到不同页面
       const userRole = res.user.role;
       if (userRole === 'admin') {
-        // 管理员跳转到审核列表页
-        navigate('/review');
+        // 管理员跳转到主页面
+        navigate('/dashboard');
       } else {
         // 商户跳转到信息录入页（酒店管理）
         navigate('/hotel');

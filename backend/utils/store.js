@@ -13,6 +13,10 @@ class MySqlStore {
     const placeholders = [];
     
     for (const [key, value] of Object.entries(item)) {
+      // 跳过 undefined 和 null 值，让数据库使用默认值
+      if (value === undefined || value === null) {
+        continue;
+      }
       fields.push(key);
       if (value instanceof Object && !(value instanceof Date)) {
         values.push(JSON.stringify(value));
@@ -40,10 +44,10 @@ class MySqlStore {
         
         for (const [key, value] of Object.entries(query)) {
           if (value instanceof RegExp) {
-            conditions.push(`${key} LIKE ?`);
+            conditions.push(`\`${key}\` LIKE ?`);
             values.push(value.source);
           } else {
-            conditions.push(`${key} = ?`);
+            conditions.push(`\`${key}\` = ?`);
             values.push(value);
           }
         }
@@ -80,7 +84,7 @@ class MySqlStore {
         const values = [];
         
         for (const [key, value] of Object.entries(query)) {
-          conditions.push(`${key} = ?`);
+          conditions.push(`\`${key}\` = ?`);
           values.push(value);
         }
 
@@ -106,7 +110,7 @@ class MySqlStore {
 
         const { fields, values, placeholders } = this._parseItem(newItem);
         
-        const sql = `INSERT INTO ${this.tableName} (${fields.join(', ')}) VALUES (${placeholders.join(', ')})`;
+        const sql = `INSERT INTO ${this.tableName} (\`${fields.join('`, `')}\`) VALUES (${placeholders.join(', ')})`;
         await pool.execute(sql, values);
         
         resolve(newItem);
@@ -119,24 +123,51 @@ class MySqlStore {
   // 更新记录
   update(id, updates) {
     return new Promise(async (resolve, reject) => {
+      let sql, values;
       try {
         const setClause = [];
-        const values = [];
+        values = [];
+        const hasUpdatedAt = 'updatedAt' in updates;
         
         for (const [key, value] of Object.entries(updates)) {
-          setClause.push(`${key} = ?`);
-          if (value instanceof Object && !(value instanceof Date)) {
+          // 跳过 undefined 值，避免 SQL 绑定参数错误
+          if (value === undefined) {
+            continue;
+          }
+          
+          setClause.push(`\`${key}\` = ?`);
+          // 处理null值
+          if (value === null) {
+            values.push(null);
+          } else if (value instanceof Date) {
+            // Date对象转换为MySQL DATETIME格式
+            values.push(value);
+          } else if (value instanceof Object && !Array.isArray(value)) {
+            // 对象（非Date、非Array）需要JSON序列化
+            values.push(JSON.stringify(value));
+          } else if (Array.isArray(value)) {
+            // 数组也需要JSON序列化
             values.push(JSON.stringify(value));
           } else {
             values.push(value);
           }
         }
         
-        setClause.push('updatedAt = ?');
-        values.push(new Date());
+        // 如果updates中没有updatedAt，则自动添加
+        if (!hasUpdatedAt) {
+          setClause.push('`updatedAt` = ?');
+          values.push(new Date());
+        }
         values.push(id);
 
-        const sql = `UPDATE ${this.tableName} SET ${setClause.join(', ')} WHERE id = ?`;
+        sql = `UPDATE ${this.tableName} SET ${setClause.join(', ')} WHERE id = ?`;
+        
+        // 调试日志（开发环境）
+        if (process.env.NODE_ENV === 'development') {
+          console.log('SQL:', sql);
+          console.log('Values:', values);
+        }
+        
         const [result] = await pool.execute(sql, values);
         
         if (result.affectedRows === 0) {
@@ -151,6 +182,15 @@ class MySqlStore {
         );
         resolve(rows[0] || null);
       } catch (error) {
+        console.error(`更新 ${this.tableName} 表错误:`, error);
+        console.error('SQL 错误详情:', {
+          message: error.message,
+          code: error.code,
+          sqlState: error.sqlState,
+          sqlMessage: error.sqlMessage,
+          sql: process.env.NODE_ENV === 'development' ? sql : undefined,
+          values: process.env.NODE_ENV === 'development' ? values : undefined
+        });
         reject(error);
       }
     });
@@ -185,7 +225,7 @@ class MySqlStore {
         const values = [];
         
         for (const [key, value] of Object.entries(query)) {
-          conditions.push(`${key} = ?`);
+          conditions.push(`\`${key}\` = ?`);
           values.push(value);
         }
 
@@ -204,5 +244,6 @@ module.exports = {
   users: new MySqlStore('users'),
   hotels: new MySqlStore('hotels'),
   rooms: new MySqlStore('rooms'),
-  orders: new MySqlStore('orders')
+  orders: new MySqlStore('orders'),
+  comments: new MySqlStore('comments')
 };

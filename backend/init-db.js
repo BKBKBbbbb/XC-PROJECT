@@ -41,12 +41,23 @@ async function initDatabase() {
     CREATE TABLE IF NOT EXISTS hotels (
       id VARCHAR(36) PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
+      nameEn VARCHAR(255),
       city VARCHAR(255),
       address TEXT,
       star INT DEFAULT 0,
+      openDate DATE,
+      phone VARCHAR(50),
+      email VARCHAR(255),
+      contactPerson VARCHAR(255),
+      description TEXT,
+      nearbyAttractions JSON,
+      nearbyTransport JSON,
+      nearbyMalls JSON,
+      discounts JSON,
       customFields JSON,
       merchantId VARCHAR(36),
-      status VARCHAR(50) DEFAULT 'draft',
+      status VARCHAR(50) DEFAULT 'pending',
+      reviewNote TEXT,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       INDEX idx_city (city),
@@ -54,6 +65,63 @@ async function initDatabase() {
       INDEX idx_status (status)
     )
   `);
+  
+  // 为已存在的表添加新字段（如果字段不存在）
+  try {
+    const [columns] = await pool.execute(`
+      SELECT COLUMN_NAME 
+      FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'hotels'
+    `, [dbConfig.database]);
+    
+    const existingColumns = columns.map(col => col.COLUMN_NAME);
+    
+    if (!existingColumns.includes('phone')) {
+      await pool.execute(`ALTER TABLE hotels ADD COLUMN phone VARCHAR(50)`);
+    }
+    if (!existingColumns.includes('email')) {
+      await pool.execute(`ALTER TABLE hotels ADD COLUMN email VARCHAR(255)`);
+    }
+    if (!existingColumns.includes('contactPerson')) {
+      await pool.execute(`ALTER TABLE hotels ADD COLUMN contactPerson VARCHAR(255)`);
+    }
+    if (!existingColumns.includes('description')) {
+      await pool.execute(`ALTER TABLE hotels ADD COLUMN description TEXT`);
+    }
+    if (!existingColumns.includes('reviewNote')) {
+      await pool.execute(`ALTER TABLE hotels ADD COLUMN reviewNote TEXT`);
+    }
+    if (!existingColumns.includes('nameEn')) {
+      await pool.execute(`ALTER TABLE hotels ADD COLUMN nameEn VARCHAR(255)`);
+    }
+    if (!existingColumns.includes('openDate')) {
+      await pool.execute(`ALTER TABLE hotels ADD COLUMN openDate DATE`);
+    }
+    if (!existingColumns.includes('nearbyAttractions')) {
+      await pool.execute(`ALTER TABLE hotels ADD COLUMN nearbyAttractions JSON`);
+    }
+    if (!existingColumns.includes('nearbyTransport')) {
+      await pool.execute(`ALTER TABLE hotels ADD COLUMN nearbyTransport JSON`);
+    }
+    if (!existingColumns.includes('nearbyMalls')) {
+      await pool.execute(`ALTER TABLE hotels ADD COLUMN nearbyMalls JSON`);
+    }
+    if (!existingColumns.includes('discounts')) {
+      await pool.execute(`ALTER TABLE hotels ADD COLUMN discounts JSON`);
+    }
+    if (!existingColumns.includes('offlineAt')) {
+      await pool.execute(`ALTER TABLE hotels ADD COLUMN offlineAt DATETIME NULL`);
+    }
+    
+    // 确保 status 字段的默认值为 'pending'（如果表已存在，更新默认值）
+    await pool.execute(`ALTER TABLE hotels MODIFY COLUMN status VARCHAR(50) DEFAULT 'pending'`);
+    
+    // 将现有的 'draft' 状态更新为 'pending'
+    await pool.execute(`UPDATE hotels SET status = 'pending' WHERE status = 'draft'`);
+  } catch (error) {
+    // 如果字段已存在，忽略错误
+    console.log('字段检查/添加时出错（可能已存在）:', error.message);
+  }
 
   // 创建 rooms 表
   await pool.execute(`
@@ -69,6 +137,26 @@ async function initDatabase() {
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       INDEX idx_hotelId (hotelId)
+    )
+  `);
+
+  // 创建 comments 表（评论审核）
+  await pool.execute(`
+    CREATE TABLE IF NOT EXISTS comments (
+      id VARCHAR(36) PRIMARY KEY,
+      hotelId VARCHAR(36) NOT NULL,
+      userId VARCHAR(36) NOT NULL,
+      hotelName VARCHAR(255) NOT NULL,
+      userName VARCHAR(255) NOT NULL,
+      rating INT DEFAULT 5,
+      content TEXT,
+      status VARCHAR(50) DEFAULT 'pending',
+      reviewNote TEXT,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_hotelId (hotelId),
+      INDEX idx_userId (userId),
+      INDEX idx_status (status)
     )
   `);
 
