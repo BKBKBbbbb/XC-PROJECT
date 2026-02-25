@@ -1,10 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const config = require('./config');
 const pool = require('./utils/db');
+const auth = require('./middleware/auth');
+const { hotels, comments } = require('./utils/store');
 
 // 引入路由
-let userRoutes, hotelRoutes, roomRoutes, orderRoutes, commentRoutes;
+let userRoutes, hotelRoutes, roomRoutes, orderRoutes, commentRoutes, dashboardRoutes;
 
 try {
   userRoutes = require('./routes/users');
@@ -12,6 +15,7 @@ try {
   roomRoutes = require('./routes/rooms');
   orderRoutes = require('./routes/orders');
   commentRoutes = require('./routes/comments');
+  dashboardRoutes = require('./routes/dashboard');
   console.log('所有路由模块加载成功');
   console.log('评论路由类型:', typeof commentRoutes);
   console.log('评论路由是否为函数:', typeof commentRoutes === 'function');
@@ -25,6 +29,10 @@ const app = express();
 // 中间件
 app.use(cors());
 app.use(express.json());
+
+// 静态资源：对外暴露 /static 前缀，用于访问酒店图片等静态文件
+// 例如: backend/public/hotel.jpg -> http://localhost:3001/static/hotel.jpg
+app.use('/static', express.static(path.join(__dirname, 'public')));
 
 // 请求日志中间件（用于调试）
 app.use((req, res, next) => {
@@ -54,6 +62,29 @@ app.use('/api/hotels', hotelRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/comments', commentRoutes);
+
+// Dashboard 统计接口（直接注册，确保可用）
+app.get('/api/dashboard/stats', auth, async (req, res) => {
+  try {
+    const [hotelCount, pendingCount, reviewCount] = await Promise.all([
+      hotels.count({ status: 'published' }),
+      comments.count({ status: 'pending' }),
+      comments.count(),
+    ]);
+    const payload = {
+      hotelCount: Number(hotelCount ?? 0),
+      pendingCount: Number(pendingCount ?? 0),
+      reviewCount: Number(reviewCount ?? 0),
+    };
+    console.log('[Dashboard] stats:', payload);
+    res.json(payload);
+  } catch (error) {
+    console.error('获取运营统计失败:', error);
+    res.status(500).json({ message: '获取统计数据失败', error: error.message });
+  }
+});
+
+app.use('/api/dashboard', dashboardRoutes);
 
 // 调试信息
 console.log('评论路由已注册: /api/comments');

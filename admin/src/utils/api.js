@@ -63,4 +63,9 @@ export const commentApi = {
   restore: (id) => api.put(`/comments/${id}/restore`),
 };
 
+// 运营概览 API
+export const dashboardApi = {
+  getStats: () => api.get('/dashboard/stats'),
+};
+
 export default api;

@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Image, Input } from '@tarojs/components';
+import { View, Text, ScrollView } from '@tarojs/components';
 import { useState, useEffect } from 'react';
 import Taro from '@tarojs/taro';
 import { get } from '../../utils/api';
@@ -16,32 +16,51 @@ const filterTags = [
 
 // 排序选项
 const sortOptions = [
-  { id: 'popular', name: '欢迎度排序' },
-  { id: 'distance', name: '位置距离' },
-  { id: 'price_asc', name: '价格从低到高' },
-  { id: 'price_desc', name: '价格从高到低' },
-  { id: 'star', name: '星级排序' }
+  // 需求要求按价格从低到高排序，这里只保留价格升序这一项作为主排序方式
+  { id: 'price_asc', name: '价格从低到高' }
 ];
+
+// 价格区间选项
+const priceRanges = ['不限', '¥0-¥300', '¥300-¥600', '¥600-¥1000', '¥1000以上'];
+
+// 星级选项
+const starOptions = [1, 2, 3, 4, 5];
+
+const formatDateDisplay = (dateStr) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return dateStr;
+  const month = d.getMonth() + 1;
+  const day = d.getDate();
+  return `${month}.${day}`;
+};
 
 export default function List() {
   const params = Taro.getCurrentInstance().router?.params || {};
   
-  const [city, setCity] = useState(params.city || '上海');
-  const [checkInDate, setCheckInDate] = useState(params.checkIn || '02.22');
-  const [checkOutDate, setCheckOutDate] = useState(params.checkOut || '02.23');
+  const [city] = useState(decodeURIComponent(params.city || '上海'));
+  const [checkInDate] = useState(params.checkIn || '');
+  const [checkOutDate] = useState(params.checkOut || '');
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [showSortMenu, setShowSortMenu] = useState(false);
-  const [currentSort, setCurrentSort] = useState('popular');
+  const [currentSort, setCurrentSort] = useState('price_asc');
   const [selectedTags, setSelectedTags] = useState([]);
   const [showFilter, setShowFilter] = useState(false);
+  const [priceRange, setPriceRange] = useState('不限');
+  const [selectedStars, setSelectedStars] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+
+  const roomCount = Number(params.rooms || 1);
+  const adultCount = Number(params.adults || 1);
+  const childCount = Number(params.children || 0);
 
   useEffect(() => {
     fetchHotels(true);
-  }, [city, currentSort, selectedTags]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [city, currentSort, selectedTags, priceRange, selectedStars, checkInDate, checkOutDate]);
 
   const fetchHotels = async (reset = false) => {
     if (loading) return;
@@ -55,31 +74,34 @@ export default function List() {
         page: currentPage,
         pageSize: 10,
         sort: currentSort,
-        tags: selectedTags.join(',')
+        tags: selectedTags.join(','),
+        priceRange,
+        stars: selectedStars.join(','),
+        checkIn: checkInDate,
+        checkOut: checkOutDate
       };
       
+      // 这里预留真实后端接口数据结构：
+      // 后端可返回 { list: HotelItem[], total: number }，其中 HotelItem 至少包含
+      // { _id, name, rating, address, price, star, tags, image, distance }
       const res = await get('/hotels', queryParams);
-      
       const newHotels = res.list || [];
-      
-      if (reset) {
-        setHotels(newHotels);
-        setPage(2);
-      } else {
-        setHotels([...hotels, ...newHotels]);
-        setPage(currentPage + 1);
-      }
+
+      const merged = reset ? newHotels : [...hotels, ...newHotels];
+      // 按价格从低到高排序，满足需求中的价格排序要求
+      merged.sort((a, b) => (a.price || 0) - (b.price || 0));
+
+      setHotels(merged);
+      setPage(currentPage + 1);
       
       setHasMore(newHotels.length >= 10);
     } catch (error) {
       console.error('获取酒店列表失败', error);
       // 使用模拟数据
       const mockData = getMockHotels();
-      if (reset) {
-        setHotels(mockData);
-      } else {
-        setHotels([...hotels, ...mockData]);
-      }
+      const mergedMock = reset ? mockData : [...hotels, ...mockData];
+      mergedMock.sort((a, b) => (a.price || 0) - (b.price || 0));
+      setHotels(mergedMock);
       setHasMore(false);
     } finally {
       setLoading(false);
@@ -178,6 +200,21 @@ export default function List() {
     setPage(1);
   };
 
+  const handlePriceChange = (range) => {
+    setPriceRange(range);
+    setPage(1);
+  };
+
+  const toggleStar = (star) => {
+    setSelectedStars((prev) => {
+      if (prev.includes(star)) {
+        return prev.filter((s) => s !== star);
+      }
+      return [...prev, star];
+    });
+    setPage(1);
+  };
+
   const handleLoadMore = () => {
     if (hasMore && !loading) {
       fetchHotels(false);
@@ -204,10 +241,16 @@ export default function List() {
           <View className="city-date" onClick={handleEditSearch}>
             <Text className="city">{city}</Text>
             <Text className="divider">|</Text>
-            <Text className="date">{checkInDate}-{checkOutDate}</Text>
+            <Text className="date">
+              {checkInDate && checkOutDate
+                ? `${formatDateDisplay(checkInDate)} - ${formatDateDisplay(checkOutDate)}`
+                : '日期未选择'}
+            </Text>
           </View>
           <View className="room-info">
-            <Text>1间 1成人</Text>
+            <Text>
+              {roomCount}间 {adultCount}成人{childCount > 0 ? ` ${childCount}儿童` : ''}
+            </Text>
           </View>
         </View>
       </View>
@@ -230,6 +273,59 @@ export default function List() {
           <Text className="arrow">{showSortMenu ? '▲' : '▼'}</Text>
         </View>
       </View>
+
+      {/* 详细筛选（星级、价格区间，默认折叠） */}
+      <View
+        className="filter-detail-row"
+        onClick={() => setShowFilter((v) => !v)}
+      >
+        <View className="filter-detail-left">
+          <Text className="filter-detail-label">筛选</Text>
+          <Text className="filter-detail-value">
+            {priceRange} /
+            {selectedStars.length > 0
+              ? ` ${selectedStars.join('、')}星`
+              : ' 星级不限'}
+          </Text>
+        </View>
+        <View className="filter-detail-arrow">
+          <Text>{showFilter ? '收起' : '展开'}</Text>
+        </View>
+      </View>
+
+      {showFilter && (
+        <View className="filter-panel">
+          <View className="filter-block">
+            <Text className="filter-title">价格区间（每晚）</Text>
+            <View className="filter-tags">
+              {priceRanges.map((range) => (
+                <View
+                  key={range}
+                  className={`filter-tag ${priceRange === range ? 'active' : ''}`}
+                  onClick={() => handlePriceChange(range)}
+                >
+                  <Text>{range}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          <View className="filter-block">
+            <Text className="filter-title">酒店星级</Text>
+            <View className="filter-tags">
+              {starOptions.map((star) => (
+                <View
+                  key={star}
+                  className={`filter-tag ${selectedStars.includes(star) ? 'active' : ''}`}
+                  onClick={() => toggleStar(star)}
+                >
+                  <Text>{star}星</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        </View>
+      )}
 
       {/* 排序下拉菜单 */}
       {showSortMenu && (

@@ -21,9 +21,16 @@ const config = {
   framework: 'react',
   mini: {},
   h5: {
+    /**
+     * 使用相对路径，避免刷新时静态资源 404 导致白屏
+     * 如果你有自己的 CDN 或根路径再改成对应地址
+     */
     publicPath: '/',
     staticDirectory: 'static',
     router: {
+      /**
+       * 使用 hash 路由，确保在普通静态服务器上刷新不会 404/白屏
+       */
       mode: 'hash',
       customRoutes: {}
     }

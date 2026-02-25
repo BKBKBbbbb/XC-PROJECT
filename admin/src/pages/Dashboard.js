@@ -1,14 +1,18 @@
 import React from 'react';
-import { Card, Row, Col, Menu } from 'antd';
+import { Card, Row, Col } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout, Icon, StatCard, theme } from '../components';
 import { getMenuItems } from '../utils/menuConfig';
 
-// 模拟数据
+// 核心数据（死数据）
 const mockStats = {
   hotelCount: 12,
-  pendingCount: 3,
-  reviewCount: 88,
+  pendingCount: 2,
+  reviewCount: 38,
+};
+
+// 今日数据
+const mockTodayStats = {
   todayOrders: 28,
   todayCheckIn: 156,
   todayRevenue: 28600,
@@ -26,6 +30,7 @@ const recentReviews = [
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const stats = mockStats;
 
   const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
   const isAdmin = userInfo.role === 'admin';
@@ -88,12 +93,12 @@ const Dashboard = () => {
       contentStyle={{ padding: 24, minHeight: 'calc(100vh - 64px)' }}
     >
           {/* 顶部欢迎条 - 精简版 */}
-          {mockStats.pendingCount > 0 && isAdmin && (
+          {stats.pendingCount > 0 && isAdmin && (
             <div style={{ background: theme.primaryLight, borderRadius: 8, padding: '12px 20px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8, border: `1px solid ${theme.primary}30` }}>
               <Icon type="BellOutlined" style={{ color: theme.primary }} />
               <span style={{ color: theme.textPrimary }}>
                 欢迎回来，<strong>{username}</strong>！今日有 
-                <span style={{ color: theme.warning, fontWeight: 600 }}> {mockStats.pendingCount} 项待审核任务</span>
+                <span style={{ color: theme.warning, fontWeight: 600 }}> {stats.pendingCount} 项待审核任务</span>
                 <a onClick={() => navigate('/review')} style={{ marginLeft: 8, color: theme.primary }}>
                   立即处理 <Icon type="RightOutlined" />
                 </a>
@@ -106,13 +111,13 @@ const Dashboard = () => {
             <h3 style={{ fontSize: 16, fontWeight: 600, color: theme.textPrimary, marginBottom: 16 }}>核心数据</h3>
             <Row gutter={[16, 16]}>
               <Col xs={24} sm={12} lg={8}>
-                <StatCard title="酒店总数（家）" value={mockStats.hotelCount} prefix={<Icon type="BankOutlined" />} onClick={() => navigate('/hotel')} />
+                <StatCard title="酒店总数（家）" value={stats.hotelCount} prefix={<Icon type="BankOutlined" />} onClick={() => navigate('/hotel')} />
               </Col>
               <Col xs={24} sm={12} lg={8}>
-                <StatCard title="待审核（条）" value={mockStats.pendingCount} prefix={<Icon type="ClockCircleOutlined" />} color={theme.warning} onClick={isAdmin ? () => navigate('/review') : undefined} isPending={mockStats.pendingCount > 0} />
+                <StatCard title="待审核（条）" value={stats.pendingCount} prefix={<Icon type="ClockCircleOutlined" />} color={theme.warning} onClick={isAdmin ? () => navigate('/review') : undefined} isPending={stats.pendingCount > 0} />
               </Col>
               <Col xs={24} sm={12} lg={8}>
-                <StatCard title="评论总数（条）" value={mockStats.reviewCount} prefix={<Icon type="MessageOutlined" />} />
+                <StatCard title="评论总数（条）" value={stats.reviewCount} prefix={<Icon type="MessageOutlined" />} />
               </Col>
             </Row>
           </div>
@@ -122,13 +127,13 @@ const Dashboard = () => {
             <h3 style={{ fontSize: 16, fontWeight: 600, color: theme.textPrimary, marginBottom: 16 }}>今日概览</h3>
             <Row gutter={[16, 16]}>
               <Col xs={24} sm={12} lg={8}>
-                <StatCard title="今日订单（笔）" value={mockStats.todayOrders} suffix="笔" prefix={<Icon type="FileTextOutlined" />} subText={`${mockStats.orderChange > 0 ? '↑' : '↓'} ${Math.abs(mockStats.orderChange)}%`} />
+                <StatCard title="今日订单（笔）" value={mockTodayStats.todayOrders} suffix="笔" prefix={<Icon type="FileTextOutlined" />} subText={`${mockTodayStats.orderChange > 0 ? '↑' : '↓'} ${Math.abs(mockTodayStats.orderChange)}%`} />
               </Col>
               <Col xs={24} sm={12} lg={8}>
-                <StatCard title="今日入住（人）" value={mockStats.todayCheckIn} suffix="人" prefix={<Icon type="TeamOutlined" />} subText={`${mockStats.checkInChange > 0 ? '↑' : '↓'} ${Math.abs(mockStats.checkInChange)}%`} />
+                <StatCard title="今日入住（人）" value={mockTodayStats.todayCheckIn} suffix="人" prefix={<Icon type="TeamOutlined" />} subText={`${mockTodayStats.checkInChange > 0 ? '↑' : '↓'} ${Math.abs(mockTodayStats.checkInChange)}%`} />
               </Col>
               <Col xs={24} sm={12} lg={8}>
-                <StatCard title="今日营收（元）" value={mockStats.todayRevenue} suffix="元" prefix={<Icon type="DollarOutlined" />} color="#165DFF" subText={`${mockStats.revenueChange > 0 ? '↑' : '↓'} ${Math.abs(mockStats.revenueChange)}%`} />
+                <StatCard title="今日营收（元）" value={mockTodayStats.todayRevenue} suffix="元" prefix={<Icon type="DollarOutlined" />} color="#165DFF" subText={`${mockTodayStats.revenueChange > 0 ? '↑' : '↓'} ${Math.abs(mockTodayStats.revenueChange)}%`} />
               </Col>
             </Row>
           </div>

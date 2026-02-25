@@ -113,6 +113,37 @@ $touch-active: rgba(0,0,0,0.1);
   font-size: 20px;
 }
 
+// 详细筛选头部
+.filter-detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background-color: $white;
+  border-bottom: 1px solid $border-color;
+}
+
+.filter-detail-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-detail-label {
+  font-size: 24px;
+  color: $text-primary;
+  margin-bottom: 4px;
+}
+
+.filter-detail-value {
+  font-size: 22px;
+  color: $text-secondary;
+}
+
+.filter-detail-arrow {
+  font-size: 22px;
+  color: $text-light;
+}
+
 // 排序下拉菜单
 .sort-menu {
   position: absolute;
@@ -158,11 +189,12 @@ $touch-active: rgba(0,0,0,0.1);
 .hotel-item {
   display: flex;
   background-color: $white;
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 0;
+  padding: 24px 0;
+  margin: 0;
+  border-bottom: 1px solid $border-color; // 列表分割线
+  box-shadow: none;
+  transition: background-color 0.2s ease;
   animation: fadeInUp 0.5s ease forwards;
   opacity: 0;
   transform: translateY(20px);
@@ -174,12 +206,11 @@ $touch-active: rgba(0,0,0,0.1);
   &:nth-child(5) { animation-delay: 0.5s; }
   
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    background-color: #fafafa;
   }
   
   &:active {
-    transform: scale(0.98);
+    background-color: $touch-active;
   }
 }
 
@@ -339,6 +370,46 @@ $touch-active: rgba(0,0,0,0.1);
   padding: 32px 0;
   color: $text-light;
   font-size: 24px;
+}
+
+// 详细筛选面板（复用查询页的样式风格）
+.filter-panel {
+  margin-top: 0;
+  padding: 12px 24px 4px;
+  background-color: $bg-color;
+  border-bottom: 1px solid $border-color;
+}
+
+.filter-block {
+  margin-bottom: 12px;
+}
+
+.filter-title {
+  font-size: 22px;
+  color: $text-secondary;
+  margin-bottom: 8px;
+}
+
+.filter-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-tag {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background-color: $white;
+  font-size: 20px;
+  color: $text-secondary;
+  border: 1px solid $border-color;
+
+  &.active {
+    background-color: rgba(255, 102, 0, 0.08);
+    border-color: $primary-color;
+    color: $primary-color;
+  }
 }
 
 // 空状态
