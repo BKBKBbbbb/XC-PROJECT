@@ -1,9 +1,9 @@
-// 变量定义
-$primary-color: #ff6600;
+// 变量定义（携程主色调蓝）
+$primary-color: #0086f6;
 $text-primary: #333;
 $text-secondary: #666;
 $text-light: #999;
-$bg-color: #f5f5f5;
+$bg-color: #f5f7fb;
 $white: #fff;
 $border-color: #e5e5e5;
 
@@ -56,6 +56,26 @@ $touch-active: rgba(0,0,0,0.1);
   background-repeat: no-repeat;
 }
 
+// 视频播放按钮
+.banner-play-btn {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .play-icon {
+    font-size: 52px;
+    color: $white;
+  }
+}
+
 .image-placeholder {
   width: 100%;
   height: 100%;
@@ -82,19 +102,26 @@ $touch-active: rgba(0,0,0,0.1);
   z-index: 10;
 }
 
-.back-btn, .share-btn {
-  width: 72px;
-  height: 72px;
-  background: rgba(0,0,0,0.4);
+.nav-left-btn,
+.nav-icon-btn {
+  width: 64px;
+  height: 64px;
+  background: rgba(0, 0, 0, 0.45);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  
+  margin-left: 4px;
+
   text {
-    font-size: 40px;
+    font-size: 36px;
     color: $white;
   }
+}
+
+.nav-right-group {
+  display: flex;
+  align-items: center;
 }
 
 .banner-counter {
@@ -158,6 +185,7 @@ $touch-active: rgba(0,0,0,0.1);
   background: $white;
   padding: 32px 24px;
   margin-bottom: 16px;
+  border-radius: 0 0 16px 16px;
 }
 
 .base-header {
@@ -166,19 +194,56 @@ $touch-active: rgba(0,0,0,0.1);
   justify-content: space-between;
 }
 
-.hotel-name {
-  font-size: 36px;
-  color: $text-primary;
-  font-weight: bold;
+.base-title {
   flex: 1;
-  line-height: 1.4;
 }
 
-.star-badge {
-  margin-left: 16px;
-  
+.detail-page .hotel-name {
+  font-size: 40px;
+  color: $text-primary;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.hotel-tags-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.star-diamond-wrap {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.star-diamond {
+  font-size: 20px;
+  color: #f7b500;
+  margin-right: 2px;
+}
+
+.open-year {
+  font-size: 22px;
+  color: $text-secondary;
+  background: #f6f7fb;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.rank-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(0, 134, 246, 0.08);
+
   text {
-    font-size: 24px;
+    font-size: 22px;
+    color: $primary-color;
   }
 }
 
@@ -187,7 +252,7 @@ $touch-active: rgba(0,0,0,0.1);
   align-items: center;
   margin-top: 20px;
   padding: 20px;
-  background: rgba(255, 102, 0, 0.05);
+  background: rgba(0, 134, 246, 0.06);
   border-radius: 12px;
 }
 
@@ -228,7 +293,7 @@ $touch-active: rgba(0,0,0,0.1);
   .review-rate {
     display: block;
     font-size: 22px;
-    color: $primary-color;
+    color: #52c41a;
     margin-top: 4px;
   }
 }
@@ -249,6 +314,13 @@ $touch-active: rgba(0,0,0,0.1);
     flex: 1;
     font-size: 26px;
     color: $text-secondary;
+  }
+
+  .address-sub {
+    display: block;
+    font-size: 22px;
+    color: $text-light;
+    margin-top: 4px;
   }
   
   .map-btn {
@@ -296,11 +368,49 @@ $touch-active: rgba(0,0,0,0.1);
   }
 }
 
+// 酒店亮点 chips 区
+.base-highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+
+  .highlight-chip {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    background: #f6f7fb;
+    border-radius: 16px;
+
+    .highlight-dot {
+      font-size: 18px;
+      color: $primary-color;
+      margin-right: 4px;
+    }
+
+    .highlight-text {
+      font-size: 22px;
+      color: $text-secondary;
+    }
+  }
+
+  .highlight-more {
+    margin-left: auto;
+    padding: 6px 0;
+
+    text {
+      font-size: 22px;
+      color: $primary-color;
+    }
+  }
+}
+
 // 通用区块
 .section {
   background: $white;
   margin-bottom: 16px;
   padding: 32px 24px;
+  border-radius: 16px;
 }
 
 .section-title {
@@ -623,7 +733,7 @@ $touch-active: rgba(0,0,0,0.1);
 
 .review-rating {
   padding: 8px 16px;
-  background: rgba(255, 102, 0, 0.1);
+  background: rgba(0, 134, 246, 0.06);
   border-radius: 8px;
   
   text {
@@ -714,7 +824,7 @@ $touch-active: rgba(0,0,0,0.1);
   height: 160px;
 }
 
-// 底部预订栏
+// 底部操作栏（问酒店 / 查看房型）
 .footer-bar {
   position: fixed;
   bottom: 0;
@@ -730,26 +840,15 @@ $touch-active: rgba(0,0,0,0.1);
 }
 
 .footer-left {
-  .price-wrapper {
-    display: flex;
-    align-items: baseline;
-  }
-  
-  .price-symbol {
-    font-size: 28px;
-    color: $primary-color;
-  }
-  
-  .price-value {
-    font-size: 48px;
-    color: $primary-color;
-    font-weight: bold;
-  }
-  
-  .price-unit {
-    font-size: 24px;
-    color: $text-light;
-    margin-left: 4px;
+  .ask-btn {
+    padding: 14px 26px;
+    border-radius: 24px;
+    border: 1px solid $border-color;
+
+    text {
+      font-size: 26px;
+      color: $text-secondary;
+    }
   }
 }
 
@@ -761,35 +860,403 @@ $touch-active: rgba(0,0,0,0.1);
   margin-left: 24px;
 }
 
-.date-info {
+.footer-price {
   display: flex;
   align-items: center;
-  
+
+  .price-symbol {
+    font-size: 26px;
+    color: $primary-color;
+  }
+
+  .price-value {
+    font-size: 40px;
+    color: $primary-color;
+    font-weight: bold;
+  }
+
+  .price-unit {
+    font-size: 22px;
+    color: $text-light;
+    margin-left: 4px;
+  }
+}
+
+.footer-room-btn {
+  padding: 12px 28px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, $primary-color 0%, #2f9bff 100%);
+  text-align: center;
+
+  text {
+    font-size: 26px;
+    color: $white;
+    font-weight: 600;
+  }
+}
+
+// 日期与房型筛选区
+.date-room-filter {
+  background: $white;
+  padding: 24px;
+  margin-bottom: 16px;
+  border-radius: 16px;
+
+  .date-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+  }
+
+  .date-main {
+    display: flex;
+    flex: 1;
+  }
+
+  .date-col {
+    flex: 1;
+
+    .date-label {
+      font-size: 22px;
+      color: $text-light;
+    }
+
+    .date-value {
+      display: block;
+      margin-top: 4px;
+      font-size: 26px;
+      color: $text-primary;
+    }
+  }
+
+  .date-nights {
+    padding-left: 12px;
+
+    text {
+      font-size: 24px;
+      color: $primary-color;
+    }
+  }
+
+  .people-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-top: 1px solid $border-color;
+
+    .people-label {
+      font-size: 24px;
+      color: $text-secondary;
+    }
+
+    .people-value {
+      font-size: 24px;
+      color: $text-primary;
+    }
+  }
+}
+
+.people-panel {
+  margin-top: 8px;
+  border-top: 1px dashed $border-color;
+  padding-top: 8px;
+
+  .people-row-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+  }
+
+  .people-row-label {
+    font-size: 24px;
+    color: $text-secondary;
+  }
+
+  .people-counter {
+    display: flex;
+    align-items: center;
+  }
+
+  .counter-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    border: 1px solid $border-color;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 8px;
+
+    text {
+      font-size: 26px;
+      color: $text-secondary;
+    }
+
+    &.counter-btn-disabled {
+      opacity: 0.4;
+    }
+  }
+
+  .counter-value {
+    font-size: 26px;
+    color: $text-primary;
+    min-width: 32px;
+    text-align: center;
+  }
+}
+
+.quick-tags-row {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.quick-tags-scroll {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.quick-tag {
+  display: inline-flex;
+  padding: 6px 12px;
+  margin-right: 8px;
+  border-radius: 14px;
+  background: #f6f7fb;
+
   text {
     font-size: 22px;
     color: $text-secondary;
   }
-  
-  .divider {
-    margin: 0 8px;
+
+  &.active {
+    background: rgba(0, 134, 246, 0.08);
+
+    text {
+      color: $primary-color;
+    }
+  }
+}
+
+.filter-btn {
+  margin-left: 10px;
+  padding: 8px 14px;
+  border-radius: 18px;
+  border: 1px solid $border-color;
+
+  text {
+    font-size: 22px;
+    color: $text-secondary;
+  }
+}
+
+.room-filter-panel {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f6f7fb;
+
+  .filter-title {
+    font-size: 24px;
+    color: $text-secondary;
+    margin-bottom: 4px;
+  }
+
+  .filter-sub {
+    font-size: 22px;
     color: $text-light;
   }
 }
 
-.book-btn {
-  padding: 24px 48px;
-  background: linear-gradient(135deg, $primary-color 0%, #ff8533 100%);
-  border-radius: 48px;
-  transition: all 0.2s ease;
-  
-  text {
+// “为您推荐”头部
+.recommend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.recommend-title {
+  font-size: 28px;
+  color: $text-primary;
+  font-weight: 600;
+}
+
+.recommend-sub {
+  font-size: 24px;
+  color: $text-light;
+  margin-left: 8px;
+}
+
+.recommend-price {
+  display: flex;
+  align-items: baseline;
+
+  .price-symbol {
+    font-size: 20px;
+    color: $primary-color;
+  }
+
+  .price-value {
     font-size: 32px;
-    color: $white;
+    color: $primary-color;
     font-weight: bold;
   }
-  
-  &:active {
-    transform: scale(0.98);
-    opacity: 0.9;
+
+  .price-unit {
+    font-size: 20px;
+    color: $text-light;
+    margin-left: 2px;
+  }
+}
+
+// 相册区
+.album-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.album-item {
+  width: calc(50% - 4px);
+  height: 160px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.album-image {
+  width: 100%;
+  height: 100%;
+}
+
+// 日历弹层样式（和首页/列表页保持统一视觉）
+.calendar-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+}
+
+.calendar-container {
+  width: 100%;
+  max-height: 80%;
+  background: $white;
+  border-radius: 24px 24px 0 0;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.calendar-header {
+  .calendar-title {
+    font-size: 30px;
+    color: $text-primary;
+    font-weight: 600;
+  }
+
+  .calendar-subtitle {
+    margin-top: 4px;
+    font-size: 22px;
+    color: $text-light;
+  }
+}
+
+.calendar-week-row {
+  display: flex;
+  margin-top: 16px;
+}
+
+.calendar-week-cell {
+  flex: 1;
+  text-align: center;
+
+  text {
+    font-size: 22px;
+    color: $text-secondary;
+  }
+}
+
+.calendar-days {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.calendar-day-cell {
+  width: 14.28%;
+  padding: 10px 0;
+  text-align: center;
+  box-sizing: border-box;
+
+  .calendar-day-number {
+    font-size: 24px;
+    color: $text-primary;
+  }
+
+  .calendar-day-tag {
+    display: block;
+    margin-top: 2px;
+    font-size: 18px;
+    color: $primary-color;
+  }
+}
+
+.calendar-day-selected {
+  background: rgba(0, 134, 246, 0.12);
+  border-radius: 12px;
+}
+
+.calendar-day-inrange {
+  background: rgba(0, 134, 246, 0.06);
+}
+
+.calendar-footer {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.calendar-footer-left {
+  flex: 1;
+
+  .calendar-footer-text {
+    font-size: 22px;
+    color: $text-secondary;
+  }
+}
+
+.calendar-footer-actions {
+  display: flex;
+  align-items: center;
+}
+
+.calendar-btn {
+  padding: 10px 20px;
+  border-radius: 20px;
+  margin-left: 8px;
+
+  &.calendar-btn-cancel {
+    border: 1px solid $border-color;
+
+    text {
+      font-size: 24px;
+      color: $text-secondary;
+    }
+  }
+
+  &.calendar-btn-ok {
+    background: $primary-color;
+
+    text {
+      font-size: 24px;
+      color: $white;
+    }
   }
 }

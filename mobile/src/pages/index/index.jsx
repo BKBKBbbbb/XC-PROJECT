@@ -4,10 +4,9 @@ import Taro from '@tarojs/taro';
 import './index.scss';
 
 /**
- * 简易日历组件（核心要求）
- * - 不直接使用 UI 库默认的日期弹窗，而是自己绘制一个可选入住/离店日期的面板
+ * 简易日历组件
  * - 逻辑：
- *   1. 生成从「今天开始」连续 N 天（默认 60 天）的日期数组
+ *   1. 生成从「今天开始」连续 N 天的日期数组
  *   2. 第一次点击：选择入住日期 startDate
  *   3. 第二次点击：选择离店日期 endDate（若比 startDate 早，则自动对调）
  *   4. 再次点击任意日期：重新从该日期开始选择新的入住/离店
@@ -232,13 +231,15 @@ function SimpleCalendar(props) {
 }
 
 export default function Index() {
+  const router = Taro.getCurrentInstance().router;
+  const initialParams = router?.params || {};
   // 选项卡：国内 / 海外 / 民宿 / 钟点房
   const [currentTab, setCurrentTab] = useState('domestic');
 
   // 当前城市
   const [currentCity, setCurrentCity] = useState('上海');
   // 城市选择器候选项（可根据实际项目扩展）
-  const cityOptions = ['上海', '北京', '杭州', '广州', '深圳', '成都', '重庆', '西安'];
+  const cityOptions = ['上海', '北京', '杭州', '广州', '深圳', '成都', '重庆', '西安', '南京'];
 
   // 关键字搜索
   const [keyword, setKeyword] = useState('');
@@ -247,7 +248,9 @@ export default function Index() {
   const [checkInDate, setCheckInDate] = useState(null); // Date
   const [checkOutDate, setCheckOutDate] = useState(null); // Date
   const [nightCount, setNightCount] = useState(1);
-  const [calendarVisible, setCalendarVisible] = useState(false);
+  const [calendarVisible, setCalendarVisible] = useState(
+    initialParams.openCalendar === '1'
+  );
 
   // 筛选条件：价格/星级
   const [filterPanelVisible, setFilterPanelVisible] = useState(false);
@@ -323,25 +326,13 @@ export default function Index() {
     });
   };
 
-  // 顶部广告点击：跳转到指定酒店官网地址（H5 直接打开外链）
+  // 顶部广告点击：跳转到「上海静安香格里拉大酒店」相关酒店列表
   const handleAdClick = () => {
-    const url = 'https://www.marriott.com.cn/hotels/szvmc-suzhou-marriott-hotel/overview/';
+    const city = encodeURIComponent('上海');
+    const keyword = encodeURIComponent('上海静安香格里拉大酒店');
 
-    // H5 环境在新标签页打开外链
-    if (process.env.TARO_ENV === 'h5') {
-      window.open(url, '_blank');
-      return;
-    }
-
-    // 其他端简单复制链接到剪贴板并提示（避免无效跳转）
-    Taro.setClipboardData({
-      data: url,
-      success: () => {
-        Taro.showToast({
-          title: '已复制酒店链接，可在浏览器中打开',
-          icon: 'none'
-        });
-      }
+    Taro.navigateTo({
+      url: `/pages/list/list?city=${city}&keyword=${keyword}`
     });
   };
 

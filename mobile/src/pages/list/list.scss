@@ -1,11 +1,16 @@
-// 变量定义
-$primary-color: #ff6600;
+// 变量定义（主色调：蓝色系）
+// 关键修改：统一使用 #1677ff / #40a9ff 作为品牌主色与辅色
+$primary-color: #1677ff;           // 品牌主色
+$primary-color-light: #40a9ff;     // 品牌辅色，用于渐变和 hover
 $text-primary: #333;
 $text-secondary: #666;
 $text-light: #999;
-$bg-color: #f5f5f5;
+$bg-color: #f5f7fb;
 $white: #fff;
 $border-color: #e5e5e5;
+// 暖色调，用于功能模块区分（如首住好礼、筛选面板分组等）
+$warm-bg: #fff7e6;
+$warm-border: #ffd591;
 
 // 响应式断点
 $breakpoint-sm: 320px;
@@ -19,182 +24,284 @@ $touch-active: rgba(0,0,0,0.1);
 .list-page {
   min-height: 100vh;
   background-color: $bg-color;
+  // 统一本页基础排版：使用相对单位，随屏幕宽度自适应
+  font-size: 3.6vw;
+  line-height: 1.5;
 }
 
-// 顶部搜索条件栏
-.top-bar {
-  background-color: $white;
-  padding: 20px 24px;
-  border-bottom: 1px solid $border-color;
+// 顶部携程风格导航栏（关键修改：主色渐变 + 滚动时半透明）
+.ctrip-nav-bar {
   position: sticky;
   top: 0;
-  z-index: 10;
-}
-
-.bar-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.city-date {
+  z-index: 20;
+  padding: 16px 16px 12px;
+  // 关键修改：使用品牌主色/辅色渐变
+  background: linear-gradient(135deg, $primary-color 0%, $primary-color-light 100%);
   display: flex;
   align-items: center;
+  color: $white;
+  transition: background 0.2s ease, box-shadow 0.2s ease, backdrop-filter 0.2s ease;
+  box-shadow: 0 4px 12px rgba(15, 39, 80, 0.15);
 }
 
-.city {
-  font-size: 28px;
-  color: $text-primary;
+.nav-left {
+  width: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.nav-back-icon {
+  // 关键修改：放大返回图标
+  font-size: 36px;
   font-weight: bold;
-  margin-right: 8px;
 }
 
-.divider {
-  margin: 0 8px;
-  color: $text-light;
-}
-
-.date {
-  font-size: 24px;
-  color: $text-secondary;
-}
-
-.room-info {
-  font-size: 24px;
-  color: $text-secondary;
-}
-
-// 筛选和排序
-.filter-bar {
-  background-color: $white;
-  padding: 16px 24px;
-  border-bottom: 1px solid $border-color;
-  display: flex;
-  align-items: center;
-  position: sticky;
-  top: 96px;
-  z-index: 9;
-}
-
-.filter-tags {
+.nav-center {
   flex: 1;
-  margin-right: 16px;
-}
-
-.filter-tag {
-  display: inline-block;
-  padding: 10px 16px;
-  margin-right: 12px;
-  background: $bg-color;
-  border-radius: 20px;
-  font-size: 22px;
-  color: $text-secondary;
-  border: 2px solid transparent;
-  
-  &.active {
-    background: rgba(255, 102, 0, 0.1);
-    border-color: $primary-color;
-    color: $primary-color;
-  }
-}
-
-.sort-btn {
-  display: flex;
-  align-items: center;
-  padding: 10px 16px;
-  background: $bg-color;
-  border-radius: 8px;
-  font-size: 24px;
-  color: $text-secondary;
-}
-
-.arrow {
-  margin-left: 8px;
-  font-size: 20px;
-}
-
-// 详细筛选头部
-.filter-detail-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 24px;
-  background-color: $white;
-  border-bottom: 1px solid $border-color;
-}
-
-.filter-detail-left {
+  padding: 0 8px;
   display: flex;
   flex-direction: column;
 }
 
-.filter-detail-label {
-  font-size: 24px;
-  color: $text-primary;
+.nav-main-line {
+  display: flex;
+  align-items: baseline;
   margin-bottom: 4px;
 }
 
-.filter-detail-value {
-  font-size: 22px;
+.nav-city {
+  font-size: 4.8vw;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.nav-date {
+  font-size: 3.6vw;
+  opacity: 0.9;
+  font-weight: bold;
+}
+
+.nav-sub-line {
+  font-size: 3.3vw;
+  opacity: 0.85;
+}
+
+.nav-room-info {
+  font-size: 3.3vw;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+}
+
+.nav-icon-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px; // 关键修改：统一 8px 圆角
+  background-color: rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+
+  &:active {
+    transform: scale(0.95);
+    background-color: rgba(255,255,255,0.25);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.nav-icon {
+  font-size: 26px;
+}
+
+// 顶部栏滚动时半透明效果
+.nav-scrolled {
+  background: linear-gradient(
+    135deg,
+    rgba(22, 119, 255, 0.92) 0%,
+    rgba(64, 169, 255, 0.92) 100%
+  );
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(15, 39, 80, 0.28);
+}
+
+// 携程风格筛选栏 + 快捷标签
+.ctrip-filter-bar {
+  background-color: $white;
+  padding: 8px 12px 8px;
+  border-bottom: 1px solid $border-color;
+  // 关键修改：增加模块之间的垂直间距
+  margin-bottom: 16px;
+}
+
+.filter-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.filter-tab-item {
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6px 0;
+  border-radius: 8px; // 关键修改：统一 8px 圆角
+  transition: background-color 0.2s ease, color 0.2s ease;
+
+  &.active {
+    background-color: rgba(22, 119, 255, 0.06);
+  }
+}
+
+.filter-tab-text {
+  font-size: 3.6vw;
+  color: $text-secondary;
+
+  .filter-tab-item.active & {
+    color: $primary-color;
+    font-weight: 600;
+  }
+}
+
+// 快捷标签横向滚动 + 右侧“全部清除”按钮
+.quick-tag-bar-row {
+  display: flex;
+  align-items: center;
+}
+
+.quick-tag-scroll {
+  flex: 1;
+  white-space: nowrap;
+  padding-right: 8px;
+}
+
+.quick-tag {
+  display: inline-flex;
+  padding: 6px 14px;
+  margin-right: 8px;
+  // 关键修改：未选中浅灰背景 + 统一 8px 圆角
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  font-size: 3.3vw;
+  color: $text-secondary;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+
+  &.active {
+    // 关键修改：选中为主色背景 + 白字
+    background-color: $primary-color;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(22, 119, 255, 0.35);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.quick-tag-text {
+  white-space: nowrap;
+}
+
+.clear-all-btn {
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid $border-color;
+  background-color: #fafafa;
+  opacity: 0.9;
+  transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+
+  &.visible {
+    opacity: 1;
+  }
+
+  &:active {
+    background-color: #f0f0f0;
+  }
+}
+
+.clear-all-text {
+  font-size: 3.3vw;
   color: $text-secondary;
 }
 
-.filter-detail-arrow {
-  font-size: 22px;
-  color: $text-light;
-}
-
-// 排序下拉菜单
-.sort-menu {
-  position: absolute;
-  top: 100%;
-  right: 24px;
-  background: $white;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-  padding: 16px;
-  z-index: 20;
-  min-width: 200px;
-}
-
-.sort-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  font-size: 24px;
-  color: $text-primary;
+// 活动横幅：首住好礼
+.activity-banner {
+  margin: 10px 12px;
+  padding: 12px 14px;
+  // 关键修改：使用暖色渐变 + 统一 8px 圆角
+  background: linear-gradient(135deg, $warm-bg 0%, $warm-border 100%);
   border-radius: 8px;
-  cursor: pointer;
-  
-  &:hover {
-    background: $bg-color;
-  }
-  
-  &.active {
-    color: $primary-color;
-  }
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 6px 16px rgba(255, 149, 64, 0.18);
 }
 
-.check-icon {
-  font-size: 24px;
-  font-weight: bold;
+.activity-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.activity-tag {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ff8a00 0%, #ff5e3a 100%);
+  color: #fff;
+  font-size: 3vw;
+  margin-bottom: 4px;
+}
+
+.activity-text {
+  font-size: 3.6vw;
+  color: #b26a00;
+}
+
+.activity-right {
+  display: flex;
+  align-items: center;
+}
+
+.activity-btn {
+  padding: 6px 14px;
+  border-radius: 8px; // 关键修改：按钮统一 8px 圆角
+  background-color: $primary-color; // 关键修改：查看按钮使用主色填充
+  color: #fff;
+  font-size: 3.3vw;
+  box-shadow: 0 4px 12px rgba(22, 119, 255, 0.35);
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+
+  &:active {
+    transform: scale(0.96);
+    box-shadow: 0 2px 8px rgba(22, 119, 255, 0.35);
+  }
 }
 
 // 酒店列表
 .hotel-list {
-  padding: 16px 24px;
+  padding: 16px 16px 120px;
 }
 
 .hotel-item {
   display: flex;
+  flex-direction: row;
+  align-items: stretch;
   background-color: $white;
-  border-radius: 0;
-  padding: 24px 0;
-  margin: 0;
-  border-bottom: 1px solid $border-color; // 列表分割线
-  box-shadow: none;
-  transition: background-color 0.2s ease;
+  border-radius: 8px; // 关键修改：卡片统一 8px 圆角
+  padding: 16px 16px 20px; // 稍微增加底部留白，避免文字贴到卡片边缘
+  margin-bottom: 12px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden; // 防止内部内容视觉上溢出圆角卡片
+  box-shadow: 0 8px 20px rgba(15, 39, 80, 0.06);
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
   animation: fadeInUp 0.5s ease forwards;
   opacity: 0;
   transform: translateY(20px);
@@ -207,10 +314,12 @@ $touch-active: rgba(0,0,0,0.1);
   
   &:hover {
     background-color: #fafafa;
+    box-shadow: 0 10px 24px rgba(15, 39, 80, 0.12);
   }
   
   &:active {
     background-color: $touch-active;
+    transform: scale(0.99);
   }
 }
 
@@ -227,15 +336,17 @@ $touch-active: rgba(0,0,0,0.1);
 }
 
 .hotel-image {
-  width: 160px;
-  height: 120px;
-  border-radius: 12px;
+  width: 32%;
+  height: 200px;
+  border-radius: 8px; // 关键修改：统一 8px 圆角
   margin-right: 20px;
+  margin-bottom: 0;
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
 }
 
+.hotel-image-real,
 .image-placeholder {
   width: 100%;
   height: 100%;
@@ -268,100 +379,169 @@ $touch-active: rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  min-width: 0; // 防止在 flex 布局下内容撑破容器
+}
+
+.hotel-title-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.ad-badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: #fff2e8;
+  color: #fa541c;
+  font-size: 3vw;
+  margin-right: 4px;
 }
 
 .hotel-name {
-  font-size: 30px;
+  font-size: 4.4vw; // 使用 vw，自适应不同屏幕宽度
   font-weight: bold;
   color: $text-primary;
-  margin-bottom: 8px;
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  // 允许多行展示，超出自动换行
+  white-space: normal;
+  word-break: break-all;
 }
 
-.hotel-rating {
+.hotel-rating-row {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
-.rating-star {
-  margin-right: 8px;
+.score-box {
+  padding: 4px 8px;
+  border-radius: 8px;
+  background-color: rgba(25, 140, 255, 0.06);
+  display: flex;
+  align-items: baseline;
+  margin-right: 6px;
 }
 
-.star {
-  font-size: 20px;
-}
-
-.rating-score {
-  font-size: 24px;
+.score-value {
+  font-size: 3.6vw;
   color: $primary-color;
   font-weight: bold;
+  margin-right: 4px;
+}
+
+.score-text {
+  font-size: 3vw;
+  color: $primary-color;
+}
+
+.review-text {
+  font-size: 3.3vw;
+  color: $text-light;
   margin-right: 8px;
 }
 
-.review-count {
-  font-size: 20px;
+.favorite-text {
+  font-size: 3.3vw;
   color: $text-light;
 }
 
-.hotel-address {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
+.hotel-location-row {
+  margin-bottom: 4px;
 }
 
-.address-text {
-  font-size: 22px;
+.location-text {
+  font-size: 3.6vw;
   color: $text-secondary;
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  max-width: 100%;
+  // 允许多行展示，超出自动换行
+  white-space: normal;
+  word-break: break-all;
 }
 
-.distance {
-  font-size: 20px;
-  color: $text-light;
-  margin-left: 8px;
+.hotel-highlights-row {
+  margin-bottom: 6px;
 }
 
-.hotel-tags {
+.highlights-text {
+  font-size: 3.3vw;
+  color: $text-secondary;
+  max-width: 100%;
+  // 允许多行展示，超出自动换行
+  white-space: normal;
+  word-break: break-all;
+}
+
+.hotel-tags-row {
   display: flex;
   flex-wrap: wrap;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .tag {
-  display: inline-block;
-  padding: 6px 12px;
-  margin-right: 8px;
-  margin-bottom: 8px;
-  background: rgba(255, 102, 0, 0.1);
-  border-radius: 4px;
-  font-size: 20px;
+  display: inline-flex;
+  padding: 4px 10px;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  background: #f5f5f5;
+  border-radius: 8px; // 关键修改：标签统一 8px 圆角
+  font-size: 3vw;
+  color: $text-secondary;
+}
+
+.rank-tag {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 8px; // 关键修改：标签统一 8px 圆角
+  background-color: rgba(25, 140, 255, 0.06);
+  font-size: 3vw;
   color: $primary-color;
 }
 
-.hotel-price {
+.hotel-price-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-top: 4px;
+}
+
+.hotel-price-main {
   display: flex;
   align-items: baseline;
 }
 
 .price-symbol {
-  font-size: 24px;
+  font-size: 3.8vw;
   color: #ff4d4f;
   font-weight: bold;
 }
 
 .price-value {
-  font-size: 36px;
+  font-size: 5.2vw;
   color: #ff4d4f;
   font-weight: bold;
   margin-right: 4px;
 }
 
 .price-unit {
-  font-size: 20px;
+  font-size: 3.3vw;
   color: $text-light;
+}
+
+.price-extra {
+  margin-top: 2px;
+}
+
+.coupon-text {
+  font-size: 3vw;
+  color: #ff8a00;
+  max-width: 100%;
+  // 允许多行展示，超出自动换行
+  white-space: normal;
+  word-break: break-all;
 }
 
 // 加载更多
@@ -369,10 +549,59 @@ $touch-active: rgba(0,0,0,0.1);
   text-align: center;
   padding: 32px 0;
   color: $text-light;
-  font-size: 24px;
+  font-size: 3.8vw;
 }
 
-// 详细筛选面板（复用查询页的样式风格）
+// 人数面板（与首页保持一致风格）
+.people-panel {
+  margin: 8px 16px 0;
+  padding: 12px;
+  background-color: $bg-color;
+  border-radius: 8px; // 关键修改：统一 8px 圆角
+}
+
+.people-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+
+.people-label {
+  font-size: 3.3vw;
+  color: $text-primary;
+}
+
+.people-counter {
+  display: flex;
+  align-items: center;
+}
+
+.counter-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px; // 关键修改：按钮统一 8px 圆角
+  border: 1px solid $border-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.3vw;
+  color: $text-primary;
+  background-color: $white;
+}
+
+.counter-btn-disabled {
+  opacity: 0.4;
+}
+
+.counter-value {
+  width: 40px;
+  text-align: center;
+  font-size: 3.3vw;
+  color: $text-primary;
+}
+
+// 详细筛选面板（关键修改：分组标题 + 细灰线 + 新滑块/复选 UI）
 .filter-panel {
   margin-top: 0;
   padding: 12px 24px 4px;
@@ -382,6 +611,11 @@ $touch-active: rgba(0,0,0,0.1);
 
 .filter-block {
   margin-bottom: 12px;
+  padding-bottom: 8px;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #f0f0f0; // 关键修改：分组用细灰线分隔
+  }
 }
 
 .filter-title {
@@ -399,7 +633,7 @@ $touch-active: rgba(0,0,0,0.1);
 .filter-tag {
   display: inline-block;
   padding: 8px 16px;
-  border-radius: 999px;
+  border-radius: 8px; // 关键修改：统一 8px 圆角
   background-color: $white;
   font-size: 20px;
   color: $text-secondary;
@@ -412,12 +646,164 @@ $touch-active: rgba(0,0,0,0.1);
   }
 }
 
+// 通用下拉面板容器（位置距离 / 价格星级 / 排序）
+.panel {
+  margin: 0 12px 16px;
+  padding: 12px 16px;
+  background-color: #fff;
+  border-radius: 8px; // 关键修改：卡片统一 8px 圆角
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.panel-distance {
+  // 可根据需要自定义特定背景
+}
+
+.panel-filter {
+  background-color: $warm-bg; // 关键修改：使用暖色调区分筛选条件区
+  border: 1px solid $warm-border;
+}
+
+.panel-sort {
+  padding: 4px 0;
+}
+
+.panel-title-row {
+  margin-bottom: 8px;
+}
+
+.panel-title {
+  font-size: 3.6vw;
+  color: $text-secondary;
+}
+
+.panel-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.panel-tag {
+  padding: 6px 14px;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+  font-size: 3.3vw;
+  color: $text-secondary;
+  transition: background-color 0.2s ease, color 0.2s ease;
+
+  &.active {
+    background-color: $primary-color;
+    color: #fff;
+  }
+}
+
+.sort-item {
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 3.4vw;
+  color: $text-secondary;
+  transition: background-color 0.2s ease, color 0.2s ease;
+
+  &.active {
+    color: $primary-color;
+    background-color: rgba(22, 119, 255, 0.06);
+  }
+}
+
+.check-icon {
+  font-size: 3.4vw;
+  color: $primary-color;
+}
+
+// 价格滑块组件
+.price-slider-row {
+  padding: 8px 0 4px;
+}
+
+.price-slider {
+  width: 100%;
+}
+
+.price-slider-labels {
+  margin-top: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.price-slider-label {
+  font-size: 3vw;
+  color: $text-light;
+
+  &.active {
+    color: $primary-color;
+    font-weight: 600;
+  }
+}
+
+// 星级筛选：复选框样式
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.filter-option {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+  transition: background-color 0.2s ease;
+
+  &.checked {
+    background-color: rgba(22, 119, 255, 0.06);
+  }
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid #d9d9d9;
+  margin-right: 6px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.checkbox-inner {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+}
+
+.filter-option.checked .checkbox {
+  border-color: $primary-color;
+  background-color: rgba(22, 119, 255, 0.08);
+}
+
+.filter-option.checked .checkbox-inner {
+  background-color: $primary-color;
+}
+
+.filter-option-label {
+  font-size: 3.3vw;
+  color: $text-secondary;
+}
+
 // 空状态
 .empty {
   text-align: center;
   padding: 120px 24px;
   color: $text-light;
-  font-size: 28px;
+  font-size: 4.4vw;
 }
 
 // 加载状态
@@ -425,7 +811,7 @@ $touch-active: rgba(0,0,0,0.1);
   text-align: center;
   padding: 60px 24px;
   color: $text-light;
-  font-size: 28px;
+  font-size: 4.4vw;
 }
 
 // 列表底部空间
@@ -438,5 +824,150 @@ $touch-active: rgba(0,0,0,0.1);
   padding: 20px 0;
   text-align: center;
   color: $text-light;
-  font-size: 24px;
+  font-size: 3.8vw;
+}
+
+// 小屏优化：在极窄屏幕上改为上下布局，避免图片+文字横向挤压导致溢出
+@media screen and (max-width: $breakpoint-sm) {
+  .hotel-item {
+    flex-direction: column;
+  }
+
+  .hotel-image {
+    width: 100%;
+    height: 180px;
+    margin-right: 0;
+    margin-bottom: 12px;
+  }
+
+  .hotel-price-row {
+    align-items: flex-start;
+  }
+}
+
+// 简易日历组件样式（沿用首页样式）
+.calendar-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.calendar-container {
+  width: 100%;
+  max-height: 80vh;
+  background-color: $white;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.calendar-header {
+  margin-bottom: 12px;
+}
+
+.calendar-title {
+  font-size: 18px;
+  color: $text-primary;
+  font-weight: 600;
+}
+
+.calendar-subtitle {
+  margin-top: 4px;
+  font-size: 14px;
+  color: $text-secondary;
+}
+
+.calendar-week-row {
+  display: flex;
+  margin-top: 8px;
+}
+
+.calendar-week-cell {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+  color: $text-secondary;
+}
+
+.calendar-days {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.calendar-day-cell {
+  width: 14.28%;
+  padding: 6px 0;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.calendar-day-number {
+  font-size: 16px;
+  color: $text-primary;
+}
+
+.calendar-day-tag {
+  margin-top: 2px;
+  font-size: 10px;
+  color: $primary-color;
+}
+
+.calendar-day-selected {
+  background-color: rgba(255, 102, 0, 0.12);
+  border-radius: 8px;
+}
+
+.calendar-day-inrange {
+  background-color: rgba(255, 102, 0, 0.06);
+  border-radius: 8px;
+}
+
+.calendar-footer {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid $border-color;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.calendar-footer-left {
+  flex: 1;
+  padding-right: 8px;
+}
+
+.calendar-footer-text {
+  font-size: 14px;
+  color: $text-secondary;
+}
+
+.calendar-footer-actions {
+  display: flex;
+  align-items: center;
+}
+
+.calendar-btn {
+  padding: 6px 14px;
+  border-radius: 999px;
+  margin-left: 8px;
+  font-size: 14px;
+}
+
+.calendar-btn-cancel {
+  background-color: $bg-color;
+  color: $text-secondary;
+}
+
+.calendar-btn-ok {
+  background-color: $primary-color;
+  color: $white;
 }

@@ -73,7 +73,15 @@ router.get('/', async (req, res) => {
 // 获取我的酒店列表（商户）
 router.get('/merchant/my', auth, async (req, res) => {
   try {
-    const hotelList = await hotels.find({ merchantId: req.user.id });
+    let hotelList = await hotels.find({ merchantId: req.user.id });
+
+    // 按创建时间倒序排序，最新创建的酒店排在最上面
+    hotelList.sort((a, b) => {
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bTime - aTime;
+    });
+
     res.json(hotelList);
   } catch (error) {
     res.status(500).json({ message: '服务器错误', error: error.message });
@@ -85,10 +93,46 @@ router.post('/', auth, async (req, res) => {
   try {
     // 确保新建酒店的状态为 pending，忽略前端可能传递的 status
     const { status, ...restBody } = req.body;
+
+    // 仅保留 hotels 表中真实存在的字段，避免未知字段导致 SQL 错误
+    // 仅保留 hotels 表中真实存在的字段，避免未知字段导致 SQL 错误
+    // 注意：如果这里新增字段，请确保同步在数据库中添加对应列
+    const allowedFields = [
+      'name',
+      'nameEn',
+      'city',
+      'address',
+      'star',
+      'openDate',
+      'phone',
+      'email',
+      'contactPerson',
+      'description',
+      // 基础配置
+      'freeParking',
+      'freeWifi',
+      'breakfastType',
+      'familyFriendly',
+      'petsAllowed',
+      // 复杂 JSON 字段
+      'roomTypes',
+      'nearbyAttractions',
+      'nearbyTransport',
+      'nearbyMalls',
+      'discounts',
+      'customFields'
+    ];
+
+    const sanitizedBody = {};
+    for (const key of allowedFields) {
+      if (restBody[key] !== undefined) {
+        sanitizedBody[key] = restBody[key];
+      }
+    }
     
     // 强制设置 status 为 pending，确保新建酒店都是待审核状态
     const hotelData = {
-      ...restBody,
+      ...sanitizedBody,
       merchantId: req.user.id,
       status: 'pending'  // 强制设置为 pending，忽略任何传入的 status 值
     };
@@ -381,14 +425,62 @@ router.get('/:id', async (req, res) => {
     if (!hotel) {
       return res.status(404).json({ message: '酒店不存在' });
     }
-    
-    // 关联房间信息
-    const hotelRooms = await rooms.find({ hotelId: hotel.id });
-    
+
+    // 1）优先从 rooms 表读取真实房型信息
+    let hotelRooms = await rooms.find({ hotelId: hotel.id });
+
+    // 2）如果 rooms 表暂无数据，但酒店已配置了 roomTypes（JSON），
+    //    则按 roomTypes 动态构建一个房型列表返回给前端，保证详情页有真实价格可用
+    if ((!hotelRooms || hotelRooms.length === 0) && hotel.roomTypes) {
+      try {
+        const parsed =
+          typeof hotel.roomTypes === 'string'
+            ? JSON.parse(hotel.roomTypes)
+            : hotel.roomTypes;
+        const list = Array.isArray(parsed) ? parsed : [parsed];
+
+        hotelRooms = list.map((r, idx) => {
+          const basePrice = Number(r.basePrice || r.price || 0) || 0;
+          const remaining =
+            Number(r.remainingRooms || r.available || r.total || 0) || 0;
+
+          return {
+            // 与 rooms 表字段保持一致，便于前端统一处理
+            id: r.id || r._id || `rt-${idx}`,
+            hotelId: hotel.id,
+            type: r.name || '标准房型',
+            price: basePrice,
+            total: remaining,
+            available: remaining,
+            facilities: Array.isArray(r.amenities || r.tags)
+              ? JSON.stringify(r.amenities || r.tags)
+              : JSON.stringify([]),
+            images: Array.isArray(r.images)
+              ? JSON.stringify(r.images)
+              : JSON.stringify([]),
+          };
+        });
+      } catch (e) {
+        // roomTypes 解析失败时保持 rooms 为空，让前端自行降级
+        console.error('解析 roomTypes 失败:', e.message);
+      }
+    }
+
+    // 3）统一计算最低价（从房型价格中取最小值）
+    let minPrice = 0;
+    if (hotelRooms && hotelRooms.length > 0) {
+      const prices = hotelRooms
+        .map((r) => Number(r.price || 0) || 0)
+        .filter((v) => v > 0);
+      if (prices.length > 0) {
+        minPrice = Math.min(...prices);
+      }
+    }
+
     res.json({
       ...hotel,
       rooms: hotelRooms,
-      minPrice: hotelRooms.length > 0 ? Math.min(...hotelRooms.map(r => r.price)) : 0
+      minPrice,
     });
   } catch (error) {
     res.status(500).json({ message: '服务器错误', error: error.message });
@@ -408,9 +500,49 @@ router.put('/:id', auth, async (req, res) => {
     if (hotel.merchantId !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ message: '无权限修改' });
     }
-    
+
+    // 仅保留 hotels 表中真实存在的字段，避免未知字段导致 SQL 错误
+    // 仅保留 hotels 表中真实存在的字段，避免未知字段导致 SQL 错误
+    // 注意：如果这里新增字段，请确保同步在数据库中添加对应列
+    const allowedFields = [
+      'name',
+      'nameEn',
+      'city',
+      'address',
+      'star',
+      'openDate',
+      'phone',
+      'email',
+      'contactPerson',
+      'description',
+      // 基础配置
+      'freeParking',
+      'freeWifi',
+      'breakfastType',
+      'familyFriendly',
+      'petsAllowed',
+      // 复杂 JSON 字段
+      'roomTypes',
+      'nearbyAttractions',
+      'nearbyTransport',
+      'nearbyMalls',
+      'discounts',
+      'customFields',
+      // 状态类字段
+      'status',
+      'reviewNote',
+      'offlineAt'
+    ];
+
+    const sanitizedUpdates = {};
+    for (const key of allowedFields) {
+      if (req.body[key] !== undefined) {
+        sanitizedUpdates[key] = req.body[key];
+      }
+    }
+
     const updatedHotel = await hotels.update(req.params.id, {
-      ...req.body,
+      ...sanitizedUpdates,
       updatedAt: new Date()
     });
     

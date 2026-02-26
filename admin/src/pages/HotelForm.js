@@ -24,6 +24,7 @@ const HotelForm = () => {
   const [saving, setSaving] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState('basic');
+  const [roomTypes, setRoomTypes] = useState([]); // 房型与基础价格
   const [customFields, setCustomFields] = useState([]);
   const [nearbyAttractions, setNearbyAttractions] = useState([]);
   const [nearbyTransport, setNearbyTransport] = useState([]);
@@ -84,13 +85,39 @@ const HotelForm = () => {
       const res = await hotelApi.get(id);
       const hotelData = res;
       
+      // 处理房型信息
+      if (hotelData.roomTypes) {
+        try {
+          const parsed = typeof hotelData.roomTypes === 'string' 
+            ? JSON.parse(hotelData.roomTypes) 
+            : hotelData.roomTypes;
+          const normalized = (Array.isArray(parsed) ? parsed : []).map((item) => ({
+            name: item.name || '',
+            basePrice: item.basePrice ?? null,
+            bedType: item.bedType || '',
+            maxOccupancy: item.maxOccupancy ?? null,
+            remainingRooms: item.remainingRooms ?? null,
+            description: item.description || '',
+          }));
+          setRoomTypes(normalized);
+        } catch (e) {
+          setRoomTypes([]);
+        }
+      }
+      
       // 处理自定义字段
       if (hotelData.customFields) {
         try {
           const parsed = typeof hotelData.customFields === 'string' 
             ? JSON.parse(hotelData.customFields) 
             : hotelData.customFields;
-          setCustomFields(Array.isArray(parsed) ? parsed : []);
+          const normalized = (Array.isArray(parsed) ? parsed : []).map((field) => ({
+            id: field.id || field.key || '',
+            name: field.name || field.label || field.key || '',
+            type: field.type || 'text',
+            value: field.value ?? '',
+          }));
+          setCustomFields(normalized);
         } catch (e) {
           setCustomFields([]);
         }
@@ -102,7 +129,25 @@ const HotelForm = () => {
           const parsed = typeof hotelData.nearbyAttractions === 'string' 
             ? JSON.parse(hotelData.nearbyAttractions) 
             : hotelData.nearbyAttractions;
-          setNearbyAttractions(Array.isArray(parsed) ? parsed : []);
+          const normalized = (Array.isArray(parsed) ? parsed : []).map((item) => {
+            let distanceValue = item.distanceValue ?? null;
+            let distanceUnit = item.distanceUnit || '米';
+            if (distanceValue == null && typeof item.distance === 'string') {
+              const num = parseFloat(item.distance);
+              if (!Number.isNaN(num)) {
+                distanceValue = num;
+              }
+              if (item.distance.includes('公里')) {
+                distanceUnit = '公里';
+              }
+            }
+            return {
+              name: item.name || '',
+              distanceValue,
+              distanceUnit,
+            };
+          });
+          setNearbyAttractions(normalized);
         } catch (e) {
           setNearbyAttractions([]);
         }
@@ -112,7 +157,26 @@ const HotelForm = () => {
           const parsed = typeof hotelData.nearbyTransport === 'string' 
             ? JSON.parse(hotelData.nearbyTransport) 
             : hotelData.nearbyTransport;
-          setNearbyTransport(Array.isArray(parsed) ? parsed : []);
+          const normalized = (Array.isArray(parsed) ? parsed : []).map((item) => {
+            let distanceValue = item.distanceValue ?? null;
+            let distanceUnit = item.distanceUnit || '米';
+            if (distanceValue == null && typeof item.distance === 'string') {
+              const num = parseFloat(item.distance);
+              if (!Number.isNaN(num)) {
+                distanceValue = num;
+              }
+              if (item.distance.includes('公里')) {
+                distanceUnit = '公里';
+              }
+            }
+            return {
+              type: item.type || '',
+              station: item.station || '',
+              distanceValue,
+              distanceUnit,
+            };
+          });
+          setNearbyTransport(normalized);
         } catch (e) {
           setNearbyTransport([]);
         }
@@ -122,7 +186,25 @@ const HotelForm = () => {
           const parsed = typeof hotelData.nearbyMalls === 'string' 
             ? JSON.parse(hotelData.nearbyMalls) 
             : hotelData.nearbyMalls;
-          setNearbyMalls(Array.isArray(parsed) ? parsed : []);
+          const normalized = (Array.isArray(parsed) ? parsed : []).map((item) => {
+            let distanceValue = item.distanceValue ?? null;
+            let distanceUnit = item.distanceUnit || '米';
+            if (distanceValue == null && typeof item.distance === 'string') {
+              const num = parseFloat(item.distance);
+              if (!Number.isNaN(num)) {
+                distanceValue = num;
+              }
+              if (item.distance.includes('公里')) {
+                distanceUnit = '公里';
+              }
+            }
+            return {
+              name: item.name || '',
+              distanceValue,
+              distanceUnit,
+            };
+          });
+          setNearbyMalls(normalized);
         } catch (e) {
           setNearbyMalls([]);
         }
@@ -134,7 +216,17 @@ const HotelForm = () => {
           const parsed = typeof hotelData.discounts === 'string' 
             ? JSON.parse(hotelData.discounts) 
             : hotelData.discounts;
-          setDiscounts(Array.isArray(parsed) ? parsed : []);
+          const normalized = (Array.isArray(parsed) ? parsed : []).map((discount) => ({
+            type: discount.type || undefined,
+            name: discount.name || '',
+            method: discount.method || undefined,
+            value: discount.value ?? null,
+            description: discount.description || '',
+            startDate: discount.startDate || null,
+            endDate: discount.endDate || null,
+            roomTypes: Array.isArray(discount.roomTypes) ? discount.roomTypes : [],
+          }));
+          setDiscounts(normalized);
         } catch (e) {
           setDiscounts([]);
         }
@@ -165,7 +257,12 @@ const HotelForm = () => {
       if (isEdit) {
         await hotelApi.update(id, {
           ...values,
-          customFields
+          customFields,
+          roomTypes,
+          nearbyAttractions,
+          nearbyTransport,
+          nearbyMalls,
+          discounts,
         });
       }
       
@@ -195,9 +292,50 @@ const HotelForm = () => {
       if (allValues.openDate) {
         allValues.openDate = dayjs(allValues.openDate).format('YYYY-MM-DD');
       }
+
+      // 校验房型信息（至少一条，且必填字段完整）
+      if (!roomTypes || roomTypes.length === 0) {
+        setSaving(false);
+        message.error('请至少添加一种房型，并填写完整的房型信息');
+        setSelectedMenu('rooms');
+        return;
+      }
+
+      for (let i = 0; i < roomTypes.length; i++) {
+        const room = roomTypes[i];
+        if (
+          !room.name ||
+          room.basePrice === null ||
+          room.basePrice === undefined ||
+          !room.bedType ||
+          room.maxOccupancy === null ||
+          room.maxOccupancy === undefined ||
+          room.remainingRooms === null ||
+          room.remainingRooms === undefined
+        ) {
+          setSaving(false);
+          message.error(`请完善第 ${i + 1} 个房型的必填信息`);
+          setSelectedMenu('rooms');
+          return;
+        }
+        if (
+          Number.isNaN(Number(room.basePrice)) ||
+          Number(room.basePrice) < 0 ||
+          Number.isNaN(Number(room.maxOccupancy)) ||
+          Number(room.maxOccupancy) <= 0 ||
+          Number.isNaN(Number(room.remainingRooms)) ||
+          Number(room.remainingRooms) < 0
+        ) {
+          setSaving(false);
+          message.error(`第 ${i + 1} 个房型的价格/人数/房量必须为有效的非负数字，且入住人数大于 0`);
+          setSelectedMenu('rooms');
+          return;
+        }
+      }
       
       const submitData = {
         ...allValues,
+        roomTypes,
         customFields,
         nearbyAttractions,
         nearbyTransport,
@@ -240,7 +378,7 @@ const HotelForm = () => {
     let targetMenu = selectedMenu;
     let errorMessage = firstError.errors[0] || '请填写所有必填字段';
 
-    if (['name', 'nameEn', 'city', 'address', 'star', 'openDate'].includes(fieldName)) {
+    if (['name', 'nameEn', 'city', 'address', 'star', 'openDate', 'freeParking', 'freeWifi', 'breakfastType'].includes(fieldName)) {
       targetMenu = 'basic';
       // 根据具体字段给出更友好的提示
       if (fieldName === 'name') {
@@ -288,7 +426,7 @@ const HotelForm = () => {
   const addCustomField = () => {
     setCustomFields([
       ...customFields,
-      { key: '', value: '', type: 'text' }
+      { id: '', name: '', value: '', type: 'text' }
     ]);
   };
 
@@ -312,6 +450,11 @@ const HotelForm = () => {
       key: 'basic',
       icon: <HomeOutlined />,
       label: '基本信息',
+    },
+    {
+      key: 'rooms',
+      icon: <ShopOutlined />,
+      label: '房型与价格',
     },
     {
       key: 'contact',
@@ -342,17 +485,17 @@ const HotelForm = () => {
 
   // 渲染对应菜单的内容
   const renderContent = () => {
-    return (
-      <>
+        return (
+          <>
         {/* 基本信息 */}
         <div style={{ display: selectedMenu === 'basic' ? 'block' : 'none' }}>
-          <Form.Item
-            name="name"
+            <Form.Item
+              name="name"
             label="酒店名称（中文）"
-            rules={[{ required: true, message: '请输入酒店名称' }]}
-          >
-            <Input placeholder="请输入酒店名称" />
-          </Form.Item>
+              rules={[{ required: true, message: '请输入酒店名称' }]}
+            >
+              <Input placeholder="请输入酒店名称" />
+            </Form.Item>
 
           <Form.Item
             name="nameEn"
@@ -360,37 +503,48 @@ const HotelForm = () => {
             rules={[{ required: true, message: '请输入酒店英文名称' }]}
           >
             <Input placeholder="Enter hotel name in English" />
-          </Form.Item>
+            </Form.Item>
 
-          <Form.Item
-            name="city"
-            label="城市"
-            rules={[{ required: true, message: '请输入城市' }]}
-          >
-            <Input placeholder="如：北京、上海" />
-          </Form.Item>
-
-          <Form.Item
-            name="address"
-            label="酒店地址"
-            rules={[{ required: true, message: '请输入地址' }]}
-          >
-            <Input placeholder="请输入详细地址" />
-          </Form.Item>
-
-          <Form.Item
-            name="star"
-            label="酒店星级"
-            rules={[{ required: true, message: '请选择星级' }]}
-          >
-            <Select placeholder="请选择星级">
-              <Option value={1}>一星级</Option>
-              <Option value={2}>二星级</Option>
-              <Option value={3}>三星级</Option>
-              <Option value={4}>四星级</Option>
-              <Option value={5}>五星级</Option>
+            <Form.Item
+              name="city"
+              label="城市"
+              rules={[{ required: true, message: '请输入城市' }]}
+            >
+            <Select placeholder="请选择城市">
+              <Option value="北京">北京</Option>
+              <Option value="上海">上海</Option>
+              <Option value="广州">广州</Option>
+              <Option value="深圳">深圳</Option>
+              <Option value="杭州">杭州</Option>
+              <Option value="南京">南京</Option>
+              <Option value="成都">成都</Option>
+              <Option value="重庆">重庆</Option>
+              <Option value="西安">西安</Option>
+              <Option value="苏州">苏州</Option>
             </Select>
-          </Form.Item>
+            </Form.Item>
+
+            <Form.Item
+              name="address"
+            label="酒店地址"
+              rules={[{ required: true, message: '请输入地址' }]}
+            >
+              <Input placeholder="请输入详细地址" />
+            </Form.Item>
+
+            <Form.Item
+              name="star"
+            label="酒店星级"
+              rules={[{ required: true, message: '请选择星级' }]}
+            >
+              <Select placeholder="请选择星级">
+              <Option value={1}>1 星</Option>
+              <Option value={2}>2 星</Option>
+              <Option value={3}>3 星</Option>
+              <Option value={4}>4 星</Option>
+              <Option value={5}>5 星</Option>
+              </Select>
+            </Form.Item>
 
           <Form.Item
             name="openDate"
@@ -399,23 +553,212 @@ const HotelForm = () => {
           >
             <DatePicker 
               style={{ width: '100%' }}
-              placeholder="请选择开业时间"
+              placeholder="请选择开业时间（YYYY-MM-DD）"
               format="YYYY-MM-DD"
             />
           </Form.Item>
+
+          <Divider />
+
+          <Card title="酒店基础配置" bordered={false} style={{ marginBottom: 0 }}>
+            <Form.Item
+              name="freeParking"
+              label="免费停车场"
+              rules={[{ required: true, message: '请选择是否提供免费停车场' }]}
+            >
+              <Select placeholder="请选择">
+                <Option value={true}>是</Option>
+                <Option value={false}>否</Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="freeWifi"
+              label="免费 WiFi"
+              rules={[{ required: true, message: '请选择是否提供免费 WiFi' }]}
+            >
+              <Select placeholder="请选择">
+                <Option value={true}>是</Option>
+                <Option value={false}>否</Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="breakfastType"
+              label="早餐服务"
+              rules={[{ required: true, message: '请选择早餐服务类型' }]}
+            >
+              <Select placeholder="请选择早餐服务类型">
+                <Option value="none">无早</Option>
+                <Option value="single">含单早</Option>
+                <Option value="double">含双早</Option>
+                <Option value="buffet">自助早</Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="familyFriendly"
+              label="亲子友好（选填）"
+            >
+              <Select placeholder="请选择">
+                <Option value={true}>是</Option>
+                <Option value={false}>否</Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="petsAllowed"
+              label="可携带宠物（选填）"
+            >
+              <Select placeholder="请选择">
+                <Option value={true}>是</Option>
+                <Option value={false}>否</Option>
+              </Select>
+            </Form.Item>
+          </Card>
+        </div>
+
+        {/* 房型与基础价格 */}
+        <div style={{ display: selectedMenu === 'rooms' ? 'block' : 'none' }}>
+          <Space direction="vertical" style={{ width: '100%' }} size="large">
+            {roomTypes.map((room, index) => (
+              <Card
+                key={index}
+                title={`房型 ${index + 1}`}
+                extra={
+                  <Button
+                    danger
+                    size="small"
+                    icon={<DeleteOutlined />}
+                    onClick={() => {
+                      const newList = roomTypes.filter((_, i) => i !== index);
+                      setRoomTypes(newList);
+                    }}
+                  >
+                    删除
+                  </Button>
+                }
+              >
+                <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                  <Form.Item label="房型名称（如：经典双床房）" required style={{ marginBottom: 0 }}>
+                    <Input
+                      placeholder="请输入房型名称"
+                      value={room.name}
+                      onChange={(e) => {
+                        const newList = [...roomTypes];
+                        newList[index] = { ...newList[index], name: e.target.value };
+                        setRoomTypes(newList);
+                      }}
+                    />
+                  </Form.Item>
+
+                  <Space style={{ width: '100%' }}>
+                    <Form.Item label="基础单价（元）" required style={{ marginBottom: 0, flex: 1 }}>
+                      <InputNumber
+                        style={{ width: '100%' }}
+                        min={0}
+                        value={room.basePrice}
+                        onChange={(value) => {
+                          const newList = [...roomTypes];
+                          newList[index] = { ...newList[index], basePrice: value };
+                          setRoomTypes(newList);
+                        }}
+                        placeholder="请输入基础价格"
+                      />
+                    </Form.Item>
+                    <Form.Item label="床型" required style={{ marginBottom: 0, flex: 1 }}>
+                      <Input
+                        placeholder="如：1.8m 大床、1.2m 双床"
+                        value={room.bedType}
+                        onChange={(e) => {
+                          const newList = [...roomTypes];
+                          newList[index] = { ...newList[index], bedType: e.target.value };
+                          setRoomTypes(newList);
+                        }}
+                      />
+                    </Form.Item>
+                  </Space>
+
+                  <Space style={{ width: '100%' }}>
+                    <Form.Item label="最大入住人数" required style={{ marginBottom: 0, flex: 1 }}>
+                      <InputNumber
+                        style={{ width: '100%' }}
+                        min={1}
+                        value={room.maxOccupancy}
+                        onChange={(value) => {
+                          const newList = [...roomTypes];
+                          newList[index] = { ...newList[index], maxOccupancy: value };
+                          setRoomTypes(newList);
+                        }}
+                        placeholder="请输入最大入住人数"
+                      />
+                    </Form.Item>
+                    <Form.Item label="剩余房量" required style={{ marginBottom: 0, flex: 1 }}>
+                      <InputNumber
+                        style={{ width: '100%' }}
+                        min={0}
+                        value={room.remainingRooms}
+                        onChange={(value) => {
+                          const newList = [...roomTypes];
+                          newList[index] = { ...newList[index], remainingRooms: value };
+                          setRoomTypes(newList);
+                        }}
+                        placeholder="请输入当前剩余房量"
+                      />
+                    </Form.Item>
+                  </Space>
+
+                  <Form.Item label="房型简介（选填）" style={{ marginBottom: 0 }}>
+                    <TextArea
+                      rows={3}
+                      placeholder="可填写房间面积、楼层、窗景等信息"
+                      value={room.description}
+                      onChange={(e) => {
+                        const newList = [...roomTypes];
+                        newList[index] = { ...newList[index], description: e.target.value };
+                        setRoomTypes(newList);
+                      }}
+                    />
+                  </Form.Item>
+                </Space>
+              </Card>
+            ))}
+
+            <Button
+              type="dashed"
+              onClick={() =>
+                setRoomTypes([
+                  ...roomTypes,
+                  {
+                    name: '',
+                    basePrice: null,
+                    bedType: '',
+                    maxOccupancy: null,
+                    remainingRooms: null,
+                    description: '',
+                  },
+                ])
+              }
+              icon={<PlusOutlined />}
+              block
+              size="large"
+            >
+              添加房型
+            </Button>
+          </Space>
         </div>
 
         {/* 联系方式 */}
         <div style={{ display: selectedMenu === 'contact' ? 'block' : 'none' }}>
-          <Form.Item
-            name="phone"
+            <Form.Item
+              name="phone"
             label={
               <span>
                 联系电话 <span style={{ color: 'red' }}>*</span>
               </span>
             }
-            rules={[
-              { required: true, message: '请输入联系电话' },
+              rules={[
+                { required: true, message: '请输入联系电话' },
               { 
                 validator: (_, value) => {
                   if (!value) {
@@ -440,21 +783,21 @@ const HotelForm = () => {
             }}
           >
             <Input placeholder="请输入联系电话（手机号或座机号）" />
-          </Form.Item>
+            </Form.Item>
 
-          <Form.Item
-            name="email"
-            label="电子邮箱"
-          >
-            <Input placeholder="请输入电子邮箱（可选）" />
-          </Form.Item>
+            <Form.Item
+              name="email"
+              label="电子邮箱"
+            >
+              <Input placeholder="请输入电子邮箱（可选）" />
+            </Form.Item>
 
-          <Form.Item
-            name="contactPerson"
-            label="联系人"
-          >
-            <Input placeholder="请输入联系人姓名（可选）" />
-          </Form.Item>
+            <Form.Item
+              name="contactPerson"
+              label="联系人"
+            >
+              <Input placeholder="请输入联系人姓名（可选）" />
+            </Form.Item>
         </div>
 
         {/* 酒店描述 */}
@@ -488,16 +831,31 @@ const HotelForm = () => {
                     }}
                     style={{ flex: 1 }}
                   />
-                  <Input
-                    placeholder="距离（如：500米）"
-                    value={item.distance}
-                    onChange={(e) => {
-                      const newList = [...nearbyAttractions];
-                      newList[index] = { ...newList[index], distance: e.target.value };
-                      setNearbyAttractions(newList);
-                    }}
-                    style={{ width: 150 }}
-                  />
+                  <Space style={{ width: 260 }}>
+                    <InputNumber
+                      placeholder="距离数值"
+                      value={item.distanceValue}
+                      onChange={(value) => {
+                        const newList = [...nearbyAttractions];
+                        newList[index] = { ...newList[index], distanceValue: value };
+                        setNearbyAttractions(newList);
+                      }}
+                      style={{ width: 140 }}
+                      min={0}
+                    />
+                    <Select
+                      value={item.distanceUnit || '米'}
+                      onChange={(value) => {
+                        const newList = [...nearbyAttractions];
+                        newList[index] = { ...newList[index], distanceUnit: value };
+                        setNearbyAttractions(newList);
+                      }}
+                      style={{ width: 100 }}
+                    >
+                      <Option value="米">米</Option>
+                      <Option value="公里">公里</Option>
+                    </Select>
+                  </Space>
                   <Button 
                     danger 
                     icon={<DeleteOutlined />}
@@ -512,7 +870,7 @@ const HotelForm = () => {
               ))}
               <Button 
                 type="dashed" 
-                onClick={() => setNearbyAttractions([...nearbyAttractions, { name: '', distance: '' }])}
+                onClick={() => setNearbyAttractions([...nearbyAttractions, { name: '', distanceValue: null, distanceUnit: '米' }])}
                 icon={<PlusOutlined />}
                 block
               >
@@ -545,16 +903,31 @@ const HotelForm = () => {
                     }}
                     style={{ width: 200 }}
                   />
-                  <Input
-                    placeholder="距离"
-                    value={item.distance}
-                    onChange={(e) => {
-                      const newList = [...nearbyTransport];
-                      newList[index] = { ...newList[index], distance: e.target.value };
-                      setNearbyTransport(newList);
-                    }}
-                    style={{ width: 150 }}
-                  />
+                  <Space style={{ width: 260 }}>
+                    <InputNumber
+                      placeholder="距离数值"
+                      value={item.distanceValue}
+                      onChange={(value) => {
+                        const newList = [...nearbyTransport];
+                        newList[index] = { ...newList[index], distanceValue: value };
+                        setNearbyTransport(newList);
+                      }}
+                      style={{ width: 140 }}
+                      min={0}
+                    />
+                    <Select
+                      value={item.distanceUnit || '米'}
+                      onChange={(value) => {
+                        const newList = [...nearbyTransport];
+                        newList[index] = { ...newList[index], distanceUnit: value };
+                        setNearbyTransport(newList);
+                      }}
+                      style={{ width: 100 }}
+                    >
+                      <Option value="米">米</Option>
+                      <Option value="公里">公里</Option>
+                    </Select>
+                  </Space>
                   <Button 
                     danger 
                     icon={<DeleteOutlined />}
@@ -569,7 +942,7 @@ const HotelForm = () => {
               ))}
               <Button 
                 type="dashed" 
-                onClick={() => setNearbyTransport([...nearbyTransport, { type: '', station: '', distance: '' }])}
+                onClick={() => setNearbyTransport([...nearbyTransport, { type: '', station: '', distanceValue: null, distanceUnit: '米' }])}
                 icon={<PlusOutlined />}
                 block
               >
@@ -592,16 +965,31 @@ const HotelForm = () => {
                     }}
                     style={{ flex: 1 }}
                   />
-                  <Input
-                    placeholder="距离（如：800米）"
-                    value={item.distance}
-                    onChange={(e) => {
-                      const newList = [...nearbyMalls];
-                      newList[index] = { ...newList[index], distance: e.target.value };
-                      setNearbyMalls(newList);
-                    }}
-                    style={{ width: 150 }}
-                  />
+                  <Space style={{ width: 260 }}>
+                    <InputNumber
+                      placeholder="距离数值"
+                      value={item.distanceValue}
+                      onChange={(value) => {
+                        const newList = [...nearbyMalls];
+                        newList[index] = { ...newList[index], distanceValue: value };
+                        setNearbyMalls(newList);
+                      }}
+                      style={{ width: 140 }}
+                      min={0}
+                    />
+                    <Select
+                      value={item.distanceUnit || '米'}
+                      onChange={(value) => {
+                        const newList = [...nearbyMalls];
+                        newList[index] = { ...newList[index], distanceUnit: value };
+                        setNearbyMalls(newList);
+                      }}
+                      style={{ width: 100 }}
+                    >
+                      <Option value="米">米</Option>
+                      <Option value="公里">公里</Option>
+                    </Select>
+                  </Space>
                   <Button 
                     danger 
                     icon={<DeleteOutlined />}
@@ -616,7 +1004,7 @@ const HotelForm = () => {
               ))}
               <Button 
                 type="dashed" 
-                onClick={() => setNearbyMalls([...nearbyMalls, { name: '', distance: '' }])}
+                onClick={() => setNearbyMalls([...nearbyMalls, { name: '', distanceValue: null, distanceUnit: '米' }])}
                 icon={<PlusOutlined />}
                 block
               >
@@ -710,6 +1098,61 @@ const HotelForm = () => {
                       />
                     </Form.Item>
                   </Space>
+
+                  <Space style={{ width: '100%' }}>
+                    <Form.Item label="优惠开始时间" style={{ marginBottom: 0, flex: 1 }}>
+                      <DatePicker
+                        style={{ width: '100%' }}
+                        format="YYYY-MM-DD"
+                        placeholder="请选择开始日期"
+                        value={discount.startDate ? dayjs(discount.startDate) : null}
+                        onChange={(date) => {
+                          const newList = [...discounts];
+                          newList[index] = { 
+                            ...newList[index], 
+                            startDate: date ? date.format('YYYY-MM-DD') : null 
+                          };
+                          setDiscounts(newList);
+                        }}
+                      />
+                    </Form.Item>
+                    <Form.Item label="优惠结束时间" style={{ marginBottom: 0, flex: 1 }}>
+                      <DatePicker
+                        style={{ width: '100%' }}
+                        format="YYYY-MM-DD"
+                        placeholder="请选择结束日期"
+                        value={discount.endDate ? dayjs(discount.endDate) : null}
+                        onChange={(date) => {
+                          const newList = [...discounts];
+                          newList[index] = { 
+                            ...newList[index], 
+                            endDate: date ? date.format('YYYY-MM-DD') : null 
+                          };
+                          setDiscounts(newList);
+                        }}
+                      />
+                    </Form.Item>
+                  </Space>
+
+                  <Form.Item label="适用房型" style={{ marginBottom: 0 }}>
+                    <Select
+                      mode="multiple"
+                      placeholder="请选择适用房型"
+                      value={discount.roomTypes || []}
+                      onChange={(value) => {
+                        const newList = [...discounts];
+                        newList[index] = { ...newList[index], roomTypes: value };
+                        setDiscounts(newList);
+                      }}
+                      allowClear
+                    >
+                      {roomTypes.map((room, i) => (
+                        <Option key={room.name || `room-${i}`} value={room.name || `房型${i + 1}`}>
+                          {room.name || `房型 ${i + 1}`}
+                        </Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
                   
                   <Form.Item label="优惠说明" style={{ marginBottom: 0 }}>
                     <TextArea
@@ -741,111 +1184,119 @@ const HotelForm = () => {
 
         {/* 自定义维度 */}
         <div style={{ display: selectedMenu === 'custom' ? 'block' : 'none' }}>
-          <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>自定义维度</span>
-            <Button 
-              type="dashed" 
-              onClick={addCustomField}
-              icon={<PlusOutlined />}
-            >
-              添加自定义维度
-            </Button>
-          </div>
-          
-          {customFields.length === 0 ? (
-            <div style={{ 
-              textAlign: 'center', 
-              padding: '40px 0', 
-              color: '#999',
-              border: '1px dashed #d9d9d9',
-              borderRadius: '8px'
-            }}>
-              <EnvironmentOutlined style={{ fontSize: 32, marginBottom: 8 }} />
-              <p>暂无自定义维度</p>
-              <p>点击上方按钮添加（如：停车场、宠物、WiFi等）</p>
-            </div>
-          ) : (
-            customFields.map((field, index) => (
-              <Card 
-                key={index} 
-                size="small" 
-                style={{ marginBottom: 16 }}
-                extra={
-                  <Popconfirm
-                    title="确定删除此维度？"
-                    onConfirm={() => removeCustomField(index)}
-                    okText="确定"
-                    cancelText="取消"
-                  >
-                    <Button 
-                      type="text" 
-                      danger 
-                      icon={<DeleteOutlined />}
-                    >
-                      删除
-                    </Button>
-                  </Popconfirm>
-                }
+            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>自定义维度</span>
+              <Button 
+                type="dashed" 
+                onClick={addCustomField}
+                icon={<PlusOutlined />}
               >
-                <Space direction="vertical" style={{ width: '100%' }}>
-                  <Input
-                    placeholder="维度名称（如：停车场）"
-                    value={field.key}
-                    onChange={(e) => updateCustomField(index, 'key', e.target.value)}
-                    addonBefore="名称"
-                  />
-                  <Select
-                    value={field.type}
-                    onChange={(value) => updateCustomField(index, 'type', value)}
-                    addonBefore="类型"
-                  >
-                    <Option value="text">文本</Option>
-                    <Option value="boolean">是/否</Option>
-                    <Option value="number">数字</Option>
-                  </Select>
-                  {field.type === 'boolean' ? (
-                    <Select
-                      value={field.value}
-                      onChange={(value) => updateCustomField(index, 'value', value)}
-                      addonBefore="值"
+                添加自定义维度
+              </Button>
+            </div>
+            
+            {customFields.length === 0 ? (
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '40px 0', 
+                color: '#999',
+                border: '1px dashed #d9d9d9',
+                borderRadius: '8px'
+              }}>
+                <EnvironmentOutlined style={{ fontSize: 32, marginBottom: 8 }} />
+                <p>暂无自定义维度</p>
+                <p>点击上方按钮添加（如：停车场、宠物、WiFi等）</p>
+              </div>
+            ) : (
+              customFields.map((field, index) => (
+                <Card 
+                  key={index} 
+                  size="small" 
+                  style={{ marginBottom: 16 }}
+                  extra={
+                    <Popconfirm
+                      title="确定删除此维度？"
+                      onConfirm={() => removeCustomField(index)}
+                      okText="确定"
+                      cancelText="取消"
                     >
-                      <Option value={true}>是</Option>
-                      <Option value={false}>否</Option>
-                    </Select>
-                  ) : (
+                      <Button 
+                        type="text" 
+                        danger 
+                        icon={<DeleteOutlined />}
+                      >
+                        删除
+                      </Button>
+                    </Popconfirm>
+                  }
+                >
+                  <Space direction="vertical" style={{ width: '100%' }}>
+                  <Space style={{ width: '100%' }}>
                     <Input
-                      placeholder="请输入值"
-                      value={field.value}
-                      onChange={(e) => updateCustomField(index, 'value', e.target.value)}
-                      addonBefore="值"
+                      placeholder="维度唯一标识（如：gym）"
+                      value={field.id}
+                      onChange={(e) => updateCustomField(index, 'id', e.target.value)}
+                      addonBefore="标识"
                     />
-                  )}
-                </Space>
-              </Card>
-            ))
-          )}
-          
-          <Divider />
-          
-          <div style={{ 
-            background: '#f6f8fa', 
-            padding: '16px', 
-            borderRadius: '8px',
-            fontSize: '13px',
-            color: '#666'
-          }}>
-            <h4 style={{ marginTop: 0 }}>💡 常见自定义维度示例</h4>
-            <ul style={{ marginBottom: 0, paddingLeft: '20px' }}>
-              <li>是否有停车场 - 是/否</li>
-              <li>是否允许宠物 - 是/否</li>
-              <li>WiFi覆盖 - 是/否</li>
-              <li>早餐提供 - 是/否</li>
-              <li>入住时间 - 文本</li>
-            </ul>
+                    <Input
+                      placeholder="维度名称（如：健身房）"
+                      value={field.name}
+                      onChange={(e) => updateCustomField(index, 'name', e.target.value)}
+                      addonBefore="名称"
+                    />
+                  </Space>
+                    <Select
+                      value={field.type}
+                      onChange={(value) => updateCustomField(index, 'type', value)}
+                      addonBefore="类型"
+                    >
+                      <Option value="text">文本</Option>
+                      <Option value="boolean">是/否</Option>
+                      <Option value="number">数字</Option>
+                    </Select>
+                    {field.type === 'boolean' ? (
+                      <Select
+                        value={field.value}
+                        onChange={(value) => updateCustomField(index, 'value', value)}
+                        addonBefore="值"
+                      >
+                        <Option value={true}>是</Option>
+                        <Option value={false}>否</Option>
+                      </Select>
+                    ) : (
+                      <Input
+                        placeholder="请输入值"
+                        value={field.value}
+                        onChange={(e) => updateCustomField(index, 'value', e.target.value)}
+                        addonBefore="值"
+                      />
+                    )}
+                  </Space>
+                </Card>
+              ))
+            )}
+            
+            <Divider />
+            
+            <div style={{ 
+              background: '#f6f8fa', 
+              padding: '16px', 
+              borderRadius: '8px',
+              fontSize: '13px',
+              color: '#666'
+            }}>
+              <h4 style={{ marginTop: 0 }}>💡 常见自定义维度示例</h4>
+              <ul style={{ marginBottom: 0, paddingLeft: '20px' }}>
+              <li>标识 gym，名称 健身房，类型 是/否</li>
+              <li>标识 parking，名称 停车场，类型 是/否</li>
+              <li>标识 pet，名称 宠物友好，类型 是/否</li>
+              <li>标识 wifi，名称 WiFi 覆盖，类型 是/否</li>
+              <li>标识 checkinTime，名称 入住时间，类型 文本</li>
+              </ul>
+            </div>
           </div>
-        </div>
       </>
-    );
+        );
   };
 
   return (
@@ -865,8 +1316,8 @@ const HotelForm = () => {
           >
             返回
           </Button>
-          <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
-            {isEdit ? '编辑酒店' : '添加酒店'}
+        <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
+          {isEdit ? '编辑酒店' : '添加酒店'}
           </div>
         </div>
         <Space>
@@ -916,7 +1367,8 @@ const HotelForm = () => {
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
             initialValues={{
-              star: 3
+              star: 3,
+              breakfastType: 'none'
             }}
           >
             {renderContent()}
