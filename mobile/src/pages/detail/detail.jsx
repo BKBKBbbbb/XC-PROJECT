@@ -2,6 +2,7 @@ import { View, Text, ScrollView, Image, Swiper, SwiperItem } from '@tarojs/compo
 import { useState, useEffect } from 'react';
 import Taro from '@tarojs/taro';
 import { get } from '../../utils/api';
+import { getScoreText, calcNights, getMinHotelPrice } from '../../utils/hotel';
 import BEDImg from '../../assets/BED.jpg';
 import ININImg from '../../assets/Hotel2.jpg';
 import './detail.scss';
@@ -15,59 +16,6 @@ const topTabs = [
   { id: 'map', name: '位置', anchor: 'section-map' },
   { id: 'album', name: '相册', anchor: 'section-album' }
 ];
-
-// 评分文案
-const getScoreText = (rating) => {
-  if (!rating && rating !== 0) return '';
-  if (rating >= 4.8) return '超棒';
-  if (rating >= 4.5) return '很好';
-  if (rating >= 4.0) return '不错';
-  return '一般';
-};
-
-// 计算房型最低价（兼容后端 roomTypes 结构）
-const getMinRoomPrice = (hotel, rooms) => {
-  const fromRooms =
-    rooms && rooms.length > 0
-      ? Math.min(...rooms.map((r) => Number(r.price || 0) || 0))
-      : null;
-
-  if (fromRooms && fromRooms > 0) return fromRooms;
-
-  let roomTypes = hotel?.roomTypes;
-  if (!roomTypes) {
-    return Number(hotel?.price || 0) || 0;
-  }
-
-  try {
-    const parsed =
-      typeof roomTypes === 'string' ? JSON.parse(roomTypes) : roomTypes;
-    const list = Array.isArray(parsed) ? parsed : [];
-    const prices = list
-      .map((room) => {
-        if (room == null || room.basePrice == null) return NaN;
-        const v = Number(room.basePrice);
-        return Number.isNaN(v) || v < 0 ? NaN : v;
-      })
-      .filter((v) => !Number.isNaN(v));
-    if (prices.length === 0) {
-      return Number(hotel?.price || 0) || 0;
-    }
-    return Math.min(...prices);
-  } catch (e) {
-    return Number(hotel?.price || 0) || 0;
-  }
-};
-
-// 简易日期差计算（晚数）
-const calcNights = (start, end) => {
-  if (!start || !end) return 0;
-  const ts1 = new Date(start).setHours(0, 0, 0, 0);
-  const ts2 = new Date(end).setHours(0, 0, 0, 0);
-  const diff = ts2 - ts1;
-  if (diff <= 0) return 0;
-  return diff / (24 * 60 * 60 * 1000);
-};
 
 // 详情页内的简易日历组件（与首页/列表页交互保持一致）
 function DetailCalendar(props) {
@@ -334,8 +282,8 @@ export default function Detail() {
 
     // 当后端暂未配置真实房型（rooms / roomTypes 都为空）时，
     // 使用酒店基础价格生成 2 个示意房型，保证「为您推荐」区域不会完全空白
-    const buildFallbackRooms = (hotelData) => {
-      const basePrice = getMinRoomPrice(hotelData, []);
+      const buildFallbackRooms = (hotelData) => {
+        const basePrice = getMinHotelPrice(hotelData, []);
       const base = Number(basePrice || hotelData.price || 0) || 0;
       // 兜底房型图片也统一用 BED 示意图
       const img = (hotelData.images && hotelData.images[0]) || BEDImg;
@@ -495,7 +443,7 @@ export default function Detail() {
   };
 
   const displayedRooms = showAllRooms ? rooms : rooms.slice(0, 2);
-  const minPrice = getMinRoomPrice(hotel, rooms);
+  const minPrice = getMinHotelPrice(hotel, rooms);
 
   // 日期展示文案：2月22日 今天
   const formatDateLabel = (d) => {

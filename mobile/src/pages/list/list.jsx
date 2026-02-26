@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Image, Picker, Slider } from '@tarojs/component
 import { useState, useEffect } from 'react';
 import Taro from '@tarojs/taro';
 import { get } from '../../utils/api';
+import { getScoreText, formatFavoriteCount, getMinHotelPrice } from '../../utils/hotel';
 import RCImage from '../../assets/R-C.jpg';
 import './list.scss';
 
@@ -40,63 +41,6 @@ const formatDateDisplay = (dateStr) => {
   const month = d.getMonth() + 1;
   const day = d.getDate();
   return `${month}.${day}`;
-};
-
-// 将评分映射为中文评价文案（如：4.7 => 超棒）
-const getScoreText = (rating) => {
-  if (!rating && rating !== 0) return '';
-  if (rating >= 4.8) return '超棒';
-  if (rating >= 4.5) return '很好';
-  if (rating >= 4.0) return '不错';
-  return '一般';
-};
-
-// 将收藏数格式化为「1.8万」风格
-const formatFavoriteCount = (num) => {
-  if (!num && num !== 0) return '';
-  if (num >= 10000) {
-    return `${(num / 10000).toFixed(1)}万`;
-  }
-  return `${num}`;
-};
-
-// 计算酒店在房型与价格信息中的「基础单价（元）」最小值
-// 后端 Hotel 数据中 roomTypes 结构参考后台管理的 HotelForm：
-// roomTypes: [{ name, basePrice, bedType, maxOccupancy, remainingRooms, description }, ...]
-// 这里做兼容：roomTypes 可能为 JSON 字符串或数组；如果没有有效房型价格，则回退到 hotel.price
-const getMinBasePrice = (hotel) => {
-  if (!hotel) return 0;
-
-  const fallback = Number(hotel.price || 0) || 0;
-  let roomTypes = hotel.roomTypes;
-
-  if (!roomTypes) {
-    return fallback;
-  }
-
-  try {
-    const parsed =
-      typeof roomTypes === 'string' ? JSON.parse(roomTypes) : roomTypes;
-    const list = Array.isArray(parsed) ? parsed : [];
-
-    const prices = list
-      .map((room) => {
-        if (!room || room.basePrice === null || room.basePrice === undefined) {
-          return NaN;
-        }
-        const v = Number(room.basePrice);
-        return Number.isNaN(v) || v < 0 ? NaN : v;
-      })
-      .filter((v) => !Number.isNaN(v));
-
-    if (prices.length === 0) {
-      return fallback;
-    }
-
-    return Math.min(...prices);
-  } catch (e) {
-    return fallback;
-  }
 };
 
 // 根据当前价格区间文案判断价格是否命中
@@ -350,7 +294,7 @@ export default function List() {
   const [selectedStars, setSelectedStars] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  // 位置距离筛选（演示用，可与后端字段联动）
+  // 位置距离筛选
   const [showDistanceFilter, setShowDistanceFilter] = useState(false);
   const [distanceFilter, setDistanceFilter] = useState('不限');
 
@@ -408,8 +352,8 @@ export default function List() {
       const res = await get('/hotels', queryParams);
       const newHotels = (res.list || []).map((hotel) => ({
         ...hotel,
-        // displayPrice 始终为该酒店所有房型基础单价中的最小值（若无房型则回退到 hotel.price）
-        displayPrice: getMinBasePrice(hotel),
+        // displayPrice 始终为该酒店最低价（房型/roomTypes/hotel.price 兜底）
+        displayPrice: getMinHotelPrice(hotel),
       }));
 
       const merged = reset ? newHotels : [...hotels, ...newHotels];
@@ -444,7 +388,7 @@ export default function List() {
       // 使用模拟数据
       const mockData = getMockHotels().map((hotel) => ({
         ...hotel,
-        displayPrice: getMinBasePrice(hotel),
+        displayPrice: getMinHotelPrice(hotel),
       }));
       const mergedMock = reset ? mockData : [...hotels, ...mockData];
       mergedMock.sort((a, b) => {
