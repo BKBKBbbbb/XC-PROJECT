@@ -69,6 +69,36 @@ const matchStars = (hotel, selectedStars) => {
   return selectedStars.includes(star);
 };
 
+// 关键词命中判断：在酒店名称 / 地址 / 城市 / 标签等字段里模糊匹配
+const matchKeyword = (hotel, keyword) => {
+  if (!keyword) return true;
+  const kw = String(keyword).trim().toLowerCase();
+  if (!kw) return true;
+
+  const fields = [
+    hotel.name,
+    hotel.city,
+    hotel.address,
+    hotel.locationDesc,
+    hotel.highlights,
+    hotel.rankLabel
+  ].filter(Boolean);
+
+  let text = fields.join(' ').toLowerCase();
+  if (Array.isArray(hotel.tags)) {
+    text += ` ${hotel.tags.join(' ').toLowerCase()}`;
+  }
+
+  return text.includes(kw);
+};
+
+// 标签筛选命中判断：酒店标签数组中只要包含任意一个已选标签即可
+const matchTagFilter = (hotel, selectedTags) => {
+  if (!selectedTags || selectedTags.length === 0) return true;
+  if (!Array.isArray(hotel.tags) || hotel.tags.length === 0) return false;
+  return selectedTags.some((tag) => hotel.tags.includes(tag));
+};
+
 /**
  * 简易日历组件（与首页复用的逻辑，实现本页内修改日期）
  */
@@ -282,16 +312,30 @@ export default function List() {
   const [checkInDate, setCheckInDate] = useState(params.checkIn || '');
   const [checkOutDate, setCheckOutDate] = useState(params.checkOut || '');
   const [nightCount, setNightCount] = useState(Number(params.nightCount || 1));
+  const [keyword, setKeyword] = useState(
+    params.keyword ? decodeURIComponent(params.keyword) : ''
+  );
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [currentSort, setCurrentSort] = useState('price_asc');
-  const [selectedTags, setSelectedTags] = useState([]);
+  const [selectedTags, setSelectedTags] = useState(
+    params.tags ? decodeURIComponent(params.tags).split(',').filter(Boolean) : []
+  );
   const [showFilter, setShowFilter] = useState(false);
-  const [priceRange, setPriceRange] = useState('不限');
-  const [selectedStars, setSelectedStars] = useState([]);
+  const [priceRange, setPriceRange] = useState(
+    params.priceRange ? decodeURIComponent(params.priceRange) : '不限'
+  );
+  const [selectedStars, setSelectedStars] = useState(
+    params.stars
+      ? params.stars
+          .split(',')
+          .map((s) => Number(s))
+          .filter((n) => !Number.isNaN(n) && n > 0)
+      : []
+  );
   const [refreshing, setRefreshing] = useState(false);
 
   // 位置距离筛选
@@ -322,7 +366,7 @@ export default function List() {
   useEffect(() => {
     fetchHotels(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [city, currentSort, selectedTags, priceRange, selectedStars, checkInDate, checkOutDate]);
+  }, [city, currentSort, selectedTags, priceRange, selectedStars, checkInDate, checkOutDate, keyword]);
 
   const fetchHotels = async (reset = false) => {
     if (loading) return;
@@ -336,6 +380,7 @@ export default function List() {
         page: currentPage,
         pageSize: 10,
         sort: currentSort,
+        keyword,
         tags: selectedTags.join(','),
         priceRange,
         stars: selectedStars.join(','),
@@ -375,7 +420,9 @@ export default function List() {
             : hotel.price || 0;
         return (
           matchPriceRange(priceValue, priceRange) &&
-          matchStars(hotel, selectedStars)
+          matchStars(hotel, selectedStars) &&
+          matchKeyword(hotel, keyword) &&
+          matchTagFilter(hotel, selectedTags)
         );
       });
 
@@ -407,7 +454,9 @@ export default function List() {
             : hotel.price || 0;
         return (
           matchPriceRange(priceValue, priceRange) &&
-          matchStars(hotel, selectedStars)
+          matchStars(hotel, selectedStars) &&
+          matchKeyword(hotel, keyword) &&
+          matchTagFilter(hotel, selectedTags)
         );
       });
 
@@ -641,6 +690,13 @@ export default function List() {
     setPage(1);
   };
 
+  // 综合筛选面板：仅重置价格 / 星级，不影响快捷标签与距离
+  const handleResetFilterPanel = () => {
+    setPriceRange('不限');
+    setSelectedStars([]);
+    setPage(1);
+  };
+
   return (
     <View className="list-page">
       {/* 顶部携程风格导航栏：返回 + 城市/日期/人数摘要 + 搜索/地图/更多 */}
@@ -768,6 +824,14 @@ export default function List() {
               </View>
             </View>
           ))}
+          <View className="people-panel-footer">
+            <View
+              className="people-confirm-btn"
+              onClick={() => setPeoplePanelVisible(false)}
+            >
+              <Text>完成</Text>
+            </View>
+          </View>
         </View>
       )}
 
@@ -912,6 +976,22 @@ export default function List() {
               })}
             </View>
           </View>
+
+            {/* 底部操作区：重置 + 确认 */}
+            <View className="filter-footer">
+              <View
+                className="filter-footer-reset"
+                onClick={handleResetFilterPanel}
+              >
+                <Text>重置</Text>
+              </View>
+              <View
+                className="filter-footer-confirm"
+                onClick={() => setShowFilter(false)}
+              >
+                <Text>完成</Text>
+              </View>
+            </View>
         </View>
       )}
 

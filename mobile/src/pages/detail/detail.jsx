@@ -792,6 +792,17 @@ export default function Detail() {
                   </View>
                 </View>
               ))}
+              <View className="people-panel-footer">
+                <View
+                  className="people-confirm-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPeoplePanelVisible(false);
+                  }}
+                >
+                  <Text>完成</Text>
+                </View>
+              </View>
             </View>
           )}
 

@@ -193,10 +193,10 @@ $touch-active: rgba(0,0,0,0.1);
   transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
 
   &.active {
-    // 关键修改：选中为主色背景 + 白字
-    background-color: $primary-color;
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(22, 119, 255, 0.35);
+    // 关键修改：选中为浅蓝底 + 主色文字（与示例图一致）
+    background-color: rgba(22, 119, 255, 0.08);
+    color: $primary-color;
+    box-shadow: 0 4px 12px rgba(22, 119, 255, 0.12);
   }
 
   &:active {
@@ -228,6 +228,36 @@ $touch-active: rgba(0,0,0,0.1);
 .clear-all-text {
   font-size: 3.3vw;
   color: $text-secondary;
+}
+
+// 综合筛选面板底部操作区：重置 + 确认
+.filter-footer {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e5e5;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.filter-footer-reset,
+.filter-footer-confirm {
+  min-width: 80px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 3.3vw;
+}
+
+.filter-footer-reset {
+  background-color: #f5f5f5;
+  color: $text-secondary;
+}
+
+.filter-footer-confirm {
+  background-color: $primary-color;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(22, 119, 255, 0.3);
 }
 
 // 活动横幅：首住好礼
@@ -599,6 +629,29 @@ $touch-active: rgba(0,0,0,0.1);
   text-align: center;
   font-size: 3.3vw;
   color: $text-primary;
+}
+
+.people-panel-footer {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed $border-color;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.people-confirm-btn {
+  min-width: 96px;
+  padding: 6px 18px;
+  border-radius: 999px;
+  background-color: $primary-color;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(22, 119, 255, 0.3);
+
+  text {
+    font-size: 3.4vw;
+    color: #fff;
+    font-weight: 500;
+  }
 }
 
 // 详细筛选面板（关键修改：分组标题 + 细灰线 + 新滑块/复选 UI）

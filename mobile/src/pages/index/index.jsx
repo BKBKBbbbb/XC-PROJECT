@@ -319,10 +319,15 @@ export default function Index() {
     const city = encodeURIComponent(currentCity || '');
     const checkIn = checkInDate ? checkInDate.toISOString().split('T')[0] : '';
     const checkOut = checkOutDate ? checkOutDate.toISOString().split('T')[0] : '';
+    const keywordParam = encodeURIComponent(keyword || '');
+    const priceRangeParam = encodeURIComponent(priceRange || '');
+    const starsParam = selectedStars.join(',');
+    const tagsParam = encodeURIComponent(selectedTags.join(','));
 
     // 这里演示使用 Taro 路由跳转；在纯 Web 场景中可对应为 router.push('/hotel/list')
+    // 关键修改：将关键词与筛选条件一并透传到列表页
     Taro.navigateTo({
-      url: `/pages/list/list?city=${city}&checkIn=${checkIn}&checkOut=${checkOut}&nightCount=${nightCount}&rooms=${roomCount}&adults=${adultCount}&children=${childCount}`
+      url: `/pages/list/list?city=${city}&checkIn=${checkIn}&checkOut=${checkOut}&nightCount=${nightCount}&rooms=${roomCount}&adults=${adultCount}&children=${childCount}&keyword=${keywordParam}&priceRange=${priceRangeParam}&stars=${starsParam}&tags=${tagsParam}`
     });
   };
 
@@ -409,6 +414,12 @@ export default function Index() {
     } else if (type === 'child') {
       setChildCount((v) => Math.max(0, v + delta));
     }
+  };
+
+  // 首页筛选条件卡片：只重置价格区间和星级选择
+  const handleResetFilterPanel = () => {
+    setPriceRange('不限');
+    setSelectedStars([]);
   };
 
   return (
@@ -574,6 +585,22 @@ export default function Index() {
                 ))}
               </View>
             </View>
+
+            {/* 底部操作区：重置 + 完成 */}
+            <View className="filter-footer">
+              <View
+                className="filter-footer-reset"
+                onClick={handleResetFilterPanel}
+              >
+                <Text>重置</Text>
+              </View>
+              <View
+                className="filter-footer-confirm"
+                onClick={() => setFilterPanelVisible(false)}
+              >
+                <Text>完成</Text>
+              </View>
+            </View>
           </View>
         )}
 
@@ -629,6 +656,17 @@ export default function Index() {
                 </View>
               </View>
             ))}
+            <View className="people-panel-footer">
+              <View
+                className="people-confirm-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPeoplePanelVisible(false);
+                }}
+              >
+                <Text>完成</Text>
+              </View>
+            </View>
           </View>
         )}
 

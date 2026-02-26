@@ -1008,6 +1008,29 @@ $touch-active: rgba(0,0,0,0.1);
   }
 }
 
+.people-panel-footer {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed $border-color;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.people-confirm-btn {
+  min-width: 120px;
+  padding: 8px 22px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, $primary-color 0%, #2f9bff 100%);
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 134, 246, 0.35);
+
+  text {
+    font-size: 24px;
+    color: $white;
+    font-weight: 600;
+  }
+}
+
 .quick-tags-row {
   margin-top: 12px;
   display: flex;
