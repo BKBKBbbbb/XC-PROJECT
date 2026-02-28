@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { AppLayout, Icon, StatCard, theme } from '../components';
 import { getMenuItems } from '../utils/menuConfig';
 
-// 核心数据（死数据）
+// 核心数据
 const mockStats = {
   hotelCount: 12,
   pendingCount: 2,

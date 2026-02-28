@@ -10,21 +10,22 @@ const { hotels, comments } = require('./utils/store');
 let userRoutes, hotelRoutes, roomRoutes, orderRoutes, commentRoutes, dashboardRoutes;
 
 try {
-  userRoutes = require('./routes/users');
-  hotelRoutes = require('./routes/hotels');
-  roomRoutes = require('./routes/rooms');
-  orderRoutes = require('./routes/orders');
-  commentRoutes = require('./routes/comments');
-  dashboardRoutes = require('./routes/dashboard');
+  userRoutes = require('./routes/users');               // 用户路由
+  hotelRoutes = require('./routes/hotels');            // 酒店路由
+  roomRoutes = require('./routes/rooms');              // 房型路由
+  orderRoutes = require('./routes/orders');           // 订单路由
+  commentRoutes = require('./routes/comments');       // 评论路由
+  dashboardRoutes = require('./routes/dashboard');    // 仪表盘路由
   console.log('所有路由模块加载成功');
   console.log('评论路由类型:', typeof commentRoutes);
   console.log('评论路由是否为函数:', typeof commentRoutes === 'function');
 } catch (error) {
+  // 路由加载失败，打印错误
   console.error('路由模块加载失败:', error);
-  process.exit(1);
+  process.exit(1);          // 退出码1表示异常退出
 }
 
-const app = express();
+const app = express();      // 创建Express应用实例
 
 // 中间件
 app.use(cors());

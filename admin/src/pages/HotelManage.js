@@ -35,7 +35,7 @@ const HotelManage = () => {
         setData(res.list || []);
       } else {
         // 商户：获取所有自己的酒店，不进行状态筛选
-        const res = await hotelApi.getMyHotels();
+      const res = await hotelApi.getMyHotels();
         setData(Array.isArray(res) ? res : []);
       }
     } catch (error) {
@@ -263,7 +263,7 @@ const HotelManage = () => {
         // 商户角色：只能编辑自己的酒店（不能删除）
         if (!isAdmin) {
           return (
-            <Space size="middle">
+        <Space size="middle">
               <Button
                 type="link"
                 icon={<Icon type="EyeOutlined" />}
@@ -271,12 +271,12 @@ const HotelManage = () => {
               >
                 查看详情
               </Button>
-              <Button 
-                type="link" 
-                icon={<Icon type="EditOutlined" />} 
-                onClick={() => handleEdit(record.id)}
-              >
-                编辑
+          <Button 
+            type="link" 
+            icon={<Icon type="EditOutlined" />} 
+            onClick={() => handleEdit(record.id)}
+          >
+            编辑
               </Button>
             </Space>
           );
@@ -303,10 +303,10 @@ const HotelManage = () => {
                   onClick={() => handleApprove(record.id)}
                 >
                   通过
-                </Button>
-                <Button 
-                  type="link" 
-                  danger
+          </Button>
+          <Button 
+            type="link" 
+            danger 
                   icon={<Icon type="CloseOutlined" />}
                   onClick={() => handleReject(record.id)}
                 >
@@ -342,9 +342,9 @@ const HotelManage = () => {
                 onClick={() => handleRestore(record.id)}
               >
                 恢复
-              </Button>
+          </Button>
             )}
-          </Space>
+        </Space>
         );
       },
     },
@@ -357,23 +357,23 @@ const HotelManage = () => {
       username={userInfo.username}
       sidebarTheme="light"
     >
-      <div style={{ marginBottom: 16 }}>
-        <h2>{isAdmin ? '酒店管理' : '我的酒店'}</h2>
-        <p style={{ color: '#666' }}>
-          {isAdmin ? '管理所有酒店信息' : '录入和管理您的酒店信息'}
-        </p>
-      </div>
+          <div style={{ marginBottom: 16 }}>
+            <h2>{isAdmin ? '酒店管理' : '我的酒店'}</h2>
+            <p style={{ color: '#666' }}>
+              {isAdmin ? '管理所有酒店信息' : '录入和管理您的酒店信息'}
+            </p>
+          </div>
       {/* 只有商户角色才能看到新增按钮 */}
       {!isAdmin && (
-        <div style={{ marginBottom: 16 }}>
-          <Button 
-            type="primary" 
-            icon={<Icon type="PlusOutlined" />} 
-            onClick={handleAdd}
-          >
+          <div style={{ marginBottom: 16 }}>
+            <Button 
+              type="primary" 
+              icon={<Icon type="PlusOutlined" />} 
+              onClick={handleAdd}
+            >
             新增酒店
-          </Button>
-        </div>
+            </Button>
+          </div>
       )}
       {/* 管理员显示状态筛选标签页 */}
       {isAdmin && (
@@ -389,12 +389,12 @@ const HotelManage = () => {
           ]}
         />
       )}
-      <Table 
-        columns={columns} 
-        dataSource={data} 
-        rowKey="id"
-        loading={loading}
-      />
+          <Table 
+            columns={columns} 
+            dataSource={data} 
+            rowKey="id"
+            loading={loading}
+          />
 
       {/* 拒绝审核模态框 */}
       <Modal

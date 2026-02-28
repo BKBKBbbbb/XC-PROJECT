@@ -1,10 +1,17 @@
-// 关键修改：引入 Slider 用于价格滑块组件
-import { View, Text, ScrollView, Image, Picker, Slider } from '@tarojs/components';
-import { useState, useEffect } from 'react';
+import { View } from '@tarojs/components';
+import { useState, useEffect, useCallback } from 'react';
 import Taro from '@tarojs/taro';
 import { get } from '../../utils/api';
-import { getScoreText, formatFavoriteCount, getMinHotelPrice } from '../../utils/hotel';
-import RCImage from '../../assets/R-C.jpg';
+import { getMinHotelPrice } from '../../utils/hotel';
+import SimpleCalendar from './components/SimpleCalendar';
+import CtripNavBar from './components/CtripNavBar';
+import PeoplePanel from './components/PeoplePanel';
+import FilterBar from './components/FilterBar';
+import DistancePanel from './components/DistancePanel';
+import PriceStarFilterPanel from './components/PriceStarFilterPanel';
+import SortPanel from './components/SortPanel';
+import ActivityBanner from './components/ActivityBanner';
+import VirtualHotelList from './components/VirtualHotelList';
 import './list.scss';
 
 // 顶部下拉筛选快捷标签（横向滚动）
@@ -99,215 +106,14 @@ const matchTagFilter = (hotel, selectedTags) => {
   return selectedTags.some((tag) => hotel.tags.includes(tag));
 };
 
-/**
- * 简易日历组件（与首页复用的逻辑，实现本页内修改日期）
- */
-function SimpleCalendar(props) {
-  const {
-    visible,
-    onClose,
-    onConfirm,
-    defaultStartDate,
-    defaultEndDate,
-    daysCount = 60
-  } = props;
-
-  const [startDate, setStartDate] = useState(defaultStartDate || null);
-  const [endDate, setEndDate] = useState(defaultEndDate || null);
-
-  useEffect(() => {
-    setStartDate(defaultStartDate || null);
-    setEndDate(defaultEndDate || null);
-  }, [defaultStartDate, defaultEndDate]);
-
-  if (!visible) return null;
-
-  const generateDays = () => {
-    const days = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    for (let i = 0; i < daysCount; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
-
-      const year = d.getFullYear();
-      const month = d.getMonth() + 1;
-      const date = d.getDate();
-
-      days.push({
-        date: d,
-        key: `${year}-${month}-${date}`,
-        year,
-        month,
-        day: date,
-        weekDay: d.getDay()
-      });
-    }
-    return days;
-  };
-
-  const days = generateDays();
-
-  const calcNights = (start, end) => {
-    if (!start || !end) return 0;
-    const ts1 = new Date(start).setHours(0, 0, 0, 0);
-    const ts2 = new Date(end).setHours(0, 0, 0, 0);
-    const diff = ts2 - ts1;
-    if (diff <= 0) return 0;
-    return diff / (24 * 60 * 60 * 1000);
-  };
-
-  const nights = calcNights(startDate, endDate);
-
-  const handleDayClick = (dayObj) => {
-    const clickedDate = dayObj.date;
-
-    if (!startDate || (startDate && endDate)) {
-      setStartDate(clickedDate);
-      setEndDate(null);
-      return;
-    }
-
-    if (startDate && !endDate) {
-      const startTs = new Date(startDate).setHours(0, 0, 0, 0);
-      const clickedTs = new Date(clickedDate).setHours(0, 0, 0, 0);
-
-      if (clickedTs < startTs) {
-        setEndDate(startDate);
-        setStartDate(clickedDate);
-      } else if (clickedTs === startTs) {
-        setEndDate(null);
-      } else {
-        setEndDate(clickedDate);
-      }
-    }
-  };
-
-  const isSameDay = (d1, d2) => {
-    if (!d1 || !d2) return false;
-    return (
-      d1.getFullYear() === d2.getFullYear() &&
-      d1.getMonth() === d2.getMonth() &&
-      d1.getDate() === d2.getDate()
-    );
-  };
-
-  const isInRange = (date) => {
-    if (!startDate || !endDate) return false;
-    const ts = date.getTime();
-    const s = startDate.getTime();
-    const e = endDate.getTime();
-    return ts > s && ts < e;
-  };
-
-  const handleConfirm = () => {
-    if (!startDate || !endDate) {
-      Taro.showToast({
-        title: '请选择完整的入住和离店日期',
-        icon: 'none'
-      });
-      return;
-    }
-    onConfirm && onConfirm(startDate, endDate, nights);
-  };
-
-  const formatLabel = (d) => {
-    if (!d) return '';
-    const month = d.getMonth() + 1;
-    const date = d.getDate();
-    return `${month}月${date}日`;
-  };
-
-  const getDayTag = (d) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tsToday = today.getTime();
-    const ts = d.getTime();
-    const diff = (ts - tsToday) / (24 * 60 * 60 * 1000);
-    if (diff === 0) return '今天';
-    if (diff === 1) return '明天';
-    if (diff === 2) return '后天';
-    return '';
-  };
-
-  return (
-    <View className="calendar-mask" catchMove onClick={onClose}>
-      <View
-        className="calendar-container"
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
-      >
-        <View className="calendar-header">
-          <Text className="calendar-title">选择入住/离店日期</Text>
-          <Text className="calendar-subtitle">
-            {startDate && !endDate && '请选择离店日期'}
-            {startDate && endDate && `共${nights}晚`}
-            {!startDate && !endDate && '请选择入住日期'}
-          </Text>
-        </View>
-
-        <View className="calendar-week-row">
-          {['日', '一', '二', '三', '四', '五', '六'].map((w) => (
-            <View key={w} className="calendar-week-cell">
-              <Text>{w}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View className="calendar-days">
-          {days.map((d) => {
-            const isStart = isSameDay(d.date, startDate);
-            const isEnd = isSameDay(d.date, endDate);
-            const inRange = isInRange(d.date);
-            const tag = getDayTag(d.date);
-
-            let cellClass = 'calendar-day-cell';
-            if (isStart || isEnd) {
-              cellClass += ' calendar-day-selected';
-            } else if (inRange) {
-              cellClass += ' calendar-day-inrange';
-            }
-
-            return (
-              <View
-                key={d.key}
-                className={cellClass}
-                onClick={() => handleDayClick(d)}
-              >
-                <Text className="calendar-day-number">{d.day}</Text>
-                {!!tag && <Text className="calendar-day-tag">{tag}</Text>}
-              </View>
-            );
-          })}
-        </View>
-
-        <View className="calendar-footer">
-          <View className="calendar-footer-left">
-            <Text className="calendar-footer-text">
-              {startDate && endDate
-                ? `${formatLabel(startDate)} - ${formatLabel(endDate)} 共${nights}晚`
-                : '请选择入住和离店日期'}
-            </Text>
-          </View>
-          <View className="calendar-footer-actions">
-            <View className="calendar-btn calendar-btn-cancel" onClick={onClose}>
-              <Text>取消</Text>
-            </View>
-            <View className="calendar-btn calendar-btn-ok" onClick={handleConfirm}>
-              <Text>确定</Text>
-            </View>
-          </View>
-        </View>
-      </View>
-    </View>
-  );
-}
+// 虚拟列表相关常量：单个酒店卡片高度
+const ITEM_HEIGHT = 260; // px
+const BASE_VISIBLE_COUNT = 10; // 基础可见条数
+const OVERSCAN_COUNT = 4; // 上下缓冲条数
 
 export default function List() {
   const params = Taro.getCurrentInstance().router?.params || {};
-
+  
   const [city, setCity] = useState(decodeURIComponent(params.city || '上海'));
   const [checkInDate, setCheckInDate] = useState(params.checkIn || '');
   const [checkOutDate, setCheckOutDate] = useState(params.checkOut || '');
@@ -352,6 +158,8 @@ export default function List() {
   const [scrolled, setScrolled] = useState(false);
   // 关键修改：价格滑块当前步进值（对应 priceRanges 索引）
   const [priceSliderValue, setPriceSliderValue] = useState(0);
+  // 虚拟列表当前可见区间
+  const [visibleRange, setVisibleRange] = useState({ start: 0, end: 0 });
 
   // 修复：不要在渲染过程中直接 setState，同步 priceRange -> 滑块值 使用 useEffect
   useEffect(() => {
@@ -367,6 +175,21 @@ export default function List() {
     fetchHotels(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [city, currentSort, selectedTags, priceRange, selectedStars, checkInDate, checkOutDate, keyword]);
+
+  // 酒店列表数据变化时，初始化虚拟列表的可见区间
+  useEffect(() => {
+    const total = hotels.length;
+    if (!total) {
+      setVisibleRange({ start: 0, end: 0 });
+      return;
+    }
+    const visibleCount = BASE_VISIBLE_COUNT + OVERSCAN_COUNT * 2;
+    const end = Math.min(total, visibleCount);
+    setVisibleRange((prev) => {
+      if (prev.start === 0 && prev.end === end) return prev;
+      return { start: 0, end };
+    });
+  }, [hotels.length]);
 
   const fetchHotels = async (reset = false) => {
     if (loading) return;
@@ -427,7 +250,7 @@ export default function List() {
       });
 
       setHotels(filteredMerged);
-      setPage(currentPage + 1);
+        setPage(currentPage + 1);
       
       setHasMore(newHotels.length >= 10);
     } catch (error) {
@@ -578,7 +401,7 @@ export default function List() {
     ];
   };
 
-  const handleHotelClick = (hotel) => {
+  const handleHotelClick = useCallback((hotel) => {
     // 兼容后端真实数据（使用 id 字段）和本地模拟数据（使用 _id 字段）
     const id = hotel.id || hotel._id;
     const name = encodeURIComponent(hotel.name || '');
@@ -592,7 +415,7 @@ export default function List() {
     Taro.navigateTo({
       url: `/pages/detail/detail?id=${id}&name=${name}&city=${cityParam}&address=${addressParam}&price=${priceValue}`
     });
-  };
+  }, []);
 
   const handleSortChange = (sort) => {
     setCurrentSort(sort.id);
@@ -674,6 +497,43 @@ export default function List() {
     setPage(1);
   };
 
+  // 虚拟列表滚动处理：根据 scrollTop 计算可见区间
+  const handleScroll = (e) => {
+    const top = e?.detail?.scrollTop || 0;
+    setScrolled(top > 0);
+
+    const total = hotels.length;
+    if (!total || ITEM_HEIGHT <= 0) return;
+
+    const visibleCount = BASE_VISIBLE_COUNT + OVERSCAN_COUNT * 2;
+
+    let start = Math.floor(top / ITEM_HEIGHT) - OVERSCAN_COUNT;
+    start = Math.max(0, start);
+
+    let end = start + visibleCount;
+    if (end > total) {
+      end = total;
+      start = Math.max(0, end - visibleCount);
+    }
+
+    setVisibleRange((prev) => {
+      if (prev.start === start && prev.end === end) {
+        return prev;
+      }
+      return { start, end };
+    });
+  };
+
+  // 根据当前可见区间预先计算虚拟列表需要渲染的数据与上下占位高度
+  const totalCount = hotels.length;
+  const startIndex = visibleRange.start;
+  const endIndex = visibleRange.end;
+  const clampedStart = Math.max(0, Math.min(startIndex, totalCount));
+  const clampedEnd = Math.max(clampedStart, Math.min(endIndex, totalCount));
+  const visibleHotels = hotels.slice(clampedStart, clampedEnd);
+  const topPaddingHeight = clampedStart * ITEM_HEIGHT;
+  const bottomPaddingHeight = Math.max(0, (totalCount - clampedEnd) * ITEM_HEIGHT);
+
   // 关键修改：是否存在激活中的筛选条件，用于控制“全部清除”按钮显隐
   const hasActiveFilters =
     selectedTags.length > 0 ||
@@ -697,480 +557,167 @@ export default function List() {
     setPage(1);
   };
 
+  const handleBack = () => {
+    // 返回上一页；若无上一页时可回到首页
+    if (Taro.getCurrentPages().length > 1) {
+      Taro.navigateBack();
+    } else {
+      Taro.switchTab?.({ url: '/pages/index/index' }) ||
+        Taro.reLaunch({ url: '/pages/index/index' });
+    }
+  };
+
+  const handleSearchClick = () => {
+    Taro.showToast({
+      title: '可在本页直接修改城市、日期和人数',
+      icon: 'none'
+    });
+  };
+
+  const handleMapClick = () => {
+    Taro.showToast({
+      title: '地图模式开发中',
+      icon: 'none'
+    });
+  };
+
+  const handleMoreClick = () => {
+    Taro.showToast({
+      title: '更多功能开发中',
+      icon: 'none'
+    });
+  };
+
+  const handleActivityView = () => {
+    Taro.showToast({
+      title: '为你推荐首住精选酒店',
+      icon: 'none'
+    });
+  };
+
+  const handleToggleSortMenu = () => {
+    setShowSortMenu((v) => !v);
+    setShowFilter(false);
+    setShowDistanceFilter(false);
+  };
+
+  const handleToggleDistanceFilter = () => {
+    setShowDistanceFilter((v) => !v);
+    setShowSortMenu(false);
+    setShowFilter(false);
+  };
+
+  const handleTogglePriceStarPanel = () => {
+    setShowFilter((v) => !v);
+    setShowSortMenu(false);
+    setShowDistanceFilter(false);
+  };
+
+  const handleToggleFilterPanel = () => {
+    setShowFilter((v) => !v);
+    setShowSortMenu(false);
+    setShowDistanceFilter(false);
+  };
+
   return (
     <View className="list-page">
       {/* 顶部携程风格导航栏：返回 + 城市/日期/人数摘要 + 搜索/地图/更多 */}
-      <View className={scrolled ? 'ctrip-nav-bar nav-scrolled' : 'ctrip-nav-bar'}>
-        <View
-          className="nav-left"
-          onClick={() => {
-            // 返回上一页；若无上一页时可回到首页
-            if (Taro.getCurrentPages().length > 1) {
-              Taro.navigateBack();
-            } else {
-              Taro.switchTab?.({ url: '/pages/index/index' }) ||
-                Taro.reLaunch({ url: '/pages/index/index' });
-            }
-          }}
-        >
-          <Text className="nav-back-icon">‹</Text>
-        </View>
-
-        <View className="nav-center">
-          <View className="nav-main-line">
-            <Picker
-              mode="selector"
-              range={cityOptions}
-              onChange={handleCityChange}
-            >
-              <Text className="nav-city">{city}</Text>
-            </Picker>
-            <Text
-              className="nav-date"
-              onClick={(e) => {
-                e.stopPropagation();
-                setCalendarVisible(true);
-              }}
-            >
-              {checkInDate && checkOutDate
-                ? `${formatDateDisplay(checkInDate)} - ${formatDateDisplay(checkOutDate)}`
-                : '选择日期'}
-            </Text>
-          </View>
-          <View className="nav-sub-line">
-            <Text
-              className="nav-room-info"
-              onClick={() => setPeoplePanelVisible((v) => !v)}
-            >
-              {roomCount}间 {adultCount}成人
-              {childCount > 0 ? ` ${childCount}儿童` : ''}
-            </Text>
-          </View>
-        </View>
-
-        <View className="nav-right">
-          {/* 搜索入口：实际逻辑依旧跳回条件编辑页 */}
-          <View
-            className="nav-icon-btn"
-            onClick={() => {
-              Taro.showToast({
-                title: '可在本页直接修改城市、日期和人数',
-                icon: 'none'
-              });
-            }}
-          >
-            <Text className="nav-icon">🔍</Text>
-          </View>
-          {/* 地图入口（预留，可根据项目接地图页） */}
-          <View
-            className="nav-icon-btn"
-            onClick={() => {
-              Taro.showToast({
-                title: '地图模式开发中',
-                icon: 'none'
-              });
-            }}
-          >
-            <Text className="nav-icon">🗺</Text>
-          </View>
-          {/* 更多操作入口（预留） */}
-          <View
-            className="nav-icon-btn"
-            onClick={() => {
-              Taro.showToast({
-                title: '更多功能开发中',
-                icon: 'none'
-              });
-            }}
-          >
-            <Text className="nav-icon">⋮</Text>
-          </View>
-        </View>
-      </View>
+      <CtripNavBar
+        scrolled={scrolled}
+        city={city}
+        cityOptions={cityOptions}
+        onCityChange={handleCityChange}
+        dateText={
+          checkInDate && checkOutDate
+            ? `${formatDateDisplay(checkInDate)} - ${formatDateDisplay(checkOutDate)}`
+            : '选择日期'
+        }
+        onOpenCalendar={() => setCalendarVisible(true)}
+        roomText={`${roomCount}间 ${adultCount}成人${childCount > 0 ? ` ${childCount}儿童` : ''}`}
+        onTogglePeoplePanel={() => setPeoplePanelVisible((v) => !v)}
+        onBack={handleBack}
+        onSearch={handleSearchClick}
+        onMap={handleMapClick}
+        onMore={handleMoreClick}
+      />
 
       {/* 房间数 / 人数调节面板（本页修改人数） */}
-      {peoplePanelVisible && (
-        <View className="people-panel">
-          {[
-            { key: 'room', label: '房间数', value: roomCount, min: 1 },
-            { key: 'adult', label: '成人', value: adultCount, min: 1 },
-            { key: 'child', label: '儿童', value: childCount, min: 0 }
-          ].map((item) => (
-            <View key={item.key} className="people-row">
-              <Text className="people-label">{item.label}</Text>
-              <View className="people-counter">
-                <View
-                  className={
-                    item.value <= item.min
-                      ? 'counter-btn counter-btn-disabled'
-                      : 'counter-btn'
-                  }
-                  onClick={() => {
-                    if (item.value <= item.min) return;
-                    changeCount(item.key, -1);
-                  }}
-                >
-                  <Text>-</Text>
-                </View>
-                <Text className="counter-value">{item.value}</Text>
-                <View
-                  className="counter-btn"
-                  onClick={() => {
-                    changeCount(item.key, 1);
-                  }}
-                >
-                  <Text>+</Text>
-                </View>
-              </View>
-            </View>
-          ))}
-          <View className="people-panel-footer">
-            <View
-              className="people-confirm-btn"
-              onClick={() => setPeoplePanelVisible(false)}
-            >
-              <Text>完成</Text>
-            </View>
-          </View>
-        </View>
-      )}
+      <PeoplePanel
+        visible={peoplePanelVisible}
+        roomCount={roomCount}
+        adultCount={adultCount}
+        childCount={childCount}
+        onChangeCount={changeCount}
+        onClose={() => setPeoplePanelVisible(false)}
+      />
 
       {/* 携程风格筛选栏：欢迎度排序 / 位置距离 / 价格星级 / 筛选 */}
-      <View className="ctrip-filter-bar">
-        <View className="filter-tabs">
-          <View
-            className={`filter-tab-item ${showSortMenu ? 'active' : ''}`}
-            onClick={() => {
-              setShowSortMenu((v) => !v);
-              setShowFilter(false);
-              setShowDistanceFilter(false);
-            }}
-          >
-            <Text className="filter-tab-text">欢迎度排序</Text>
-          </View>
-          <View
-            className={`filter-tab-item ${showDistanceFilter || distanceFilter !== '不限' ? 'active' : ''}`}
-            onClick={() => {
-              setShowDistanceFilter((v) => !v);
-              setShowSortMenu(false);
-              setShowFilter(false);
-            }}
-          >
-            <Text className="filter-tab-text">位置距离</Text>
-          </View>
-          <View
-            className={`filter-tab-item ${showFilter && (priceRange !== '不限' || selectedStars.length > 0) ? 'active' : ''}`}
-            onClick={() => {
-              setShowFilter((v) => !v);
-              setShowSortMenu(false);
-              setShowDistanceFilter(false);
-            }}
-          >
-            <Text className="filter-tab-text">价格/星级</Text>
-          </View>
-          <View
-            className={`filter-tab-item ${showFilter ? 'active' : ''}`}
-            onClick={() => {
-              setShowFilter((v) => !v);
-              setShowSortMenu(false);
-              setShowDistanceFilter(false);
-            }}
-          >
-            <Text className="filter-tab-text">筛选</Text>
-          </View>
-        </View>
-
-        {/* 横向滚动快捷标签，如外滩核心区、新春套餐等 */}
-        <View className="quick-tag-bar-row">
-          <ScrollView className="quick-tag-scroll" scrollX>
-            {filterTags.map((tag) => (
-              <View
-                key={tag.id}
-                className={`quick-tag ${selectedTags.includes(tag.name) ? 'active' : ''}`}
-                onClick={() => handleTagClick(tag)}
-              >
-                <Text className="quick-tag-text">{tag.name}</Text>
-              </View>
-            ))}
-          </ScrollView>
-          <View
-            className={`clear-all-btn ${hasActiveFilters ? 'visible' : ''}`}
-            onClick={hasActiveFilters ? handleClearAllFilters : undefined}
-          >
-            <Text className="clear-all-text">全部清除</Text>
-          </View>
-        </View>
-      </View>
+      <FilterBar
+        showSortMenu={showSortMenu}
+        showDistanceFilter={showDistanceFilter}
+        distanceFilter={distanceFilter}
+        showFilter={showFilter}
+        priceRange={priceRange}
+        selectedStars={selectedStars}
+        selectedTags={selectedTags}
+        filterTags={filterTags}
+        hasActiveFilters={hasActiveFilters}
+        onToggleSort={handleToggleSortMenu}
+        onToggleDistance={handleToggleDistanceFilter}
+        onTogglePriceStar={handleTogglePriceStarPanel}
+        onToggleFilter={handleToggleFilterPanel}
+        onTagClick={handleTagClick}
+        onClearAll={handleClearAllFilters}
+      />
 
       {/* 位置距离筛选面板（示例：只做前端筛选文案展示，可与后端联动） */}
-      {showDistanceFilter && (
-        <View className="panel panel-distance">
-          <View className="panel-title-row">
-            <Text className="panel-title">位置距离</Text>
-          </View>
-          <View className="panel-tags">
-            {['不限', '距离优先', '1km 内', '3km 内', '5km 内'].map((item) => (
-              <View
-                key={item}
-                className={`panel-tag ${distanceFilter === item ? 'active' : ''}`}
-                onClick={() => setDistanceFilter(item)}
-              >
-                <Text>{item}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      )}
+      <DistancePanel
+        visible={showDistanceFilter}
+        distanceFilter={distanceFilter}
+        onSelect={(item) => setDistanceFilter(item)}
+      />
 
       {/* 价格 / 星级等综合筛选面板 */}
-      {showFilter && (
-        <View className="panel panel-filter">
-          <View className="filter-block">
-            <Text className="filter-title">价格区间（每晚）</Text>
-            {/* 关键修改：价格区间改为滑块组件 + 下方刻度文案 */}
-            <View className="price-slider-row">
-              <Slider
-                className="price-slider"
-                min={0}
-                max={priceRanges.length - 1}
-                step={1}
-                value={priceSliderValue}
-                activeColor="#1677ff"
-                backgroundColor="#e5e5e5"
-                blockSize={16}
-                showValue={false}
-                onChange={handlePriceSliderChange}
-                onChanging={handlePriceSliderChanging}
-              />
-              <View className="price-slider-labels">
-                {priceRanges.map((range, index) => (
-                  <Text
-                    key={range}
-                    className={`price-slider-label ${index === priceSliderValue ? 'active' : ''}`}
-                  >
-                    {range}
-                  </Text>
-                ))}
-              </View>
-            </View>
-          </View>
-
-          <View className="filter-block">
-            <Text className="filter-title">酒店星级</Text>
-            {/* 关键修改：星级筛选改为复选框视觉样式 */}
-            <View className="filter-options">
-              {starOptions.map((star) => {
-                const checked = selectedStars.includes(star);
-                return (
-                  <View
-                    key={star}
-                    className={`filter-option ${checked ? 'checked' : ''}`}
-                    onClick={() => toggleStar(star)}
-                  >
-                    <View className="checkbox">
-                      <View className="checkbox-inner" />
-                    </View>
-                    <Text className="filter-option-label">{star}星</Text>
-                  </View>
-                );
-              })}
-            </View>
-          </View>
-
-            {/* 底部操作区：重置 + 确认 */}
-            <View className="filter-footer">
-              <View
-                className="filter-footer-reset"
-                onClick={handleResetFilterPanel}
-              >
-                <Text>重置</Text>
-              </View>
-              <View
-                className="filter-footer-confirm"
-                onClick={() => setShowFilter(false)}
-              >
-                <Text>完成</Text>
-              </View>
-            </View>
-        </View>
-      )}
+      <PriceStarFilterPanel
+        visible={showFilter}
+        priceRanges={priceRanges}
+        priceSliderValue={priceSliderValue}
+        onPriceChange={handlePriceSliderChange}
+        onPriceChanging={handlePriceSliderChanging}
+        starOptions={starOptions}
+        selectedStars={selectedStars}
+        onToggleStar={toggleStar}
+        onReset={handleResetFilterPanel}
+        onDone={() => setShowFilter(false)}
+      />
 
       {/* 欢迎度排序下拉面板 */}
-      {showSortMenu && (
-        <View className="panel panel-sort">
-          {sortOptions.map((option) => (
-            <View
-              key={option.id}
-              className={`sort-item ${currentSort === option.id ? 'active' : ''}`}
-              onClick={() => handleSortChange(option)}
-            >
-              <Text>{option.name}</Text>
-              {currentSort === option.id && <Text className="check-icon">✓</Text>}
-            </View>
-          ))}
-        </View>
-      )}
+      <SortPanel
+        visible={showSortMenu}
+        sortOptions={sortOptions}
+        currentSort={currentSort}
+        onSelect={handleSortChange}
+      />
 
       {/* 首住好礼活动横幅 */}
-      <View className="activity-banner">
-        <View className="activity-left">
-          <View className="activity-tag">
-            <Text>首住好礼</Text>
-          </View>
-          <Text className="activity-text">首住特惠 85折起</Text>
-        </View>
-        <View className="activity-right">
-          <View
-            className="activity-btn"
-            onClick={() => {
-              Taro.showToast({
-                title: '为你推荐首住精选酒店',
-                icon: 'none'
-              });
-            }}
-          >
-            <Text>查看</Text>
-          </View>
-        </View>
-      </View>
+      <ActivityBanner onView={handleActivityView} />
 
-      {/* 酒店列表：支持上滑自动加载更多 */}
-      <ScrollView 
-        className="hotel-list" 
-        scrollY 
-        onScrollToLower={handleLoadMore}
-        onRefresherRefresh={handleRefresh}
-        refresherEnabled={true}
-        refresherTriggered={refreshing}
-        // 关键修改：监听页面滚动，控制顶部栏半透明状态
-        onScroll={(e) => {
-          const top = e?.detail?.scrollTop || 0;
-          setScrolled(top > 0);
-        }}
-      >
-        {loading && hotels.length === 0 ? (
-          <View className="loading">
-            <Text>加载中...</Text>
-          </View>
-        ) : hotels.length > 0 ? (
-          hotels.map((hotel, index) => (
-              <View
-                key={hotel._id || hotel.id || `${hotel.name || 'hotel'}-${index}`}
-                className="hotel-item"
-                onClick={() => handleHotelClick(hotel)}
-              >
-              {/* 左侧：酒店主图 + 视频按钮 + 活动标签 */}
-              <View className="hotel-image">
-                <Image
-                  src={RCImage}
-                  className="hotel-image-real"
-                  mode="aspectFill"
-                />
-
-                {/* 视频播放按钮（示意） */}
-                {hotel.hasVideo && (
-                  <View className="video-badge">
-                    <Text className="video-icon">▶</Text>
-                  </View>
-                )}
-
-                {/* 左下角活动标签，如「春节特惠精选」 */}
-                {hotel.activityTag && (
-                  <View className="image-activity-tag">
-                    <Text>{hotel.activityTag}</Text>
-                  </View>
-                )}
-              </View>
-
-              {/* 右侧：酒店名称、评分、位置、亮点、标签、榜单、价格信息 */}
-              <View className="hotel-content">
-                <View className="hotel-title-row">
-                  {hotel.isAd && <Text className="ad-badge">广告</Text>}
-                  <Text className="hotel-name">{hotel.name}</Text>
-                </View>
-
-                <View className="hotel-rating-row">
-                  <View className="score-box">
-                    <Text className="score-value">
-                      {hotel.rating ? hotel.rating.toFixed(1) : '--'}
-                    </Text>
-                    <Text className="score-text">{getScoreText(hotel.rating)}</Text>
-                  </View>
-                  {hotel.reviewCount ? (
-                    <Text className="review-text">{hotel.reviewCount}条点评</Text>
-                  ) : null}
-                  {typeof hotel.favoriteCount === 'number' && (
-                    <Text className="favorite-text">
-                      {formatFavoriteCount(hotel.favoriteCount)}人收藏
-                    </Text>
-                  )}
-                </View>
-
-                <View className="hotel-location-row">
-                  <Text className="location-text">
-                    {hotel.locationDesc ||
-                      (hotel.address ? `近${city}·${hotel.address}` : city)}
-                  </Text>
-                </View>
-
-                {hotel.highlights && (
-                  <View className="hotel-highlights-row">
-                    <Text className="highlights-text">{hotel.highlights}</Text>
-                  </View>
-                )}
-
-                <View className="hotel-tags-row">
-                  {hotel.tags &&
-                    hotel.tags.map((tag, index) => (
-                      <View key={index} className="tag">
-                        <Text>{tag}</Text>
-                      </View>
-                    ))}
-                  {hotel.rankLabel && (
-                    <View className="rank-tag">
-                      <Text>{hotel.rankLabel}</Text>
-                    </View>
-                  )}
-                </View>
-
-                <View className="hotel-price-row">
-                  <View className="hotel-price-main">
-                    <Text className="price-symbol">¥</Text>
-                    <Text className="price-value">
-                      {hotel.displayPrice != null && hotel.displayPrice !== undefined
-                        ? hotel.displayPrice
-                        : hotel.price}
-                    </Text>
-                    <Text className="price-unit">起</Text>
-                  </View>
-                  {hotel.couponText && (
-                    <View className="price-extra">
-                      <Text className="coupon-text">{hotel.couponText}</Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-            </View>
-          ))
-        ) : (
-          <View className="empty">
-            <Text>暂无酒店数据</Text>
-          </View>
-        )}
-        
-        {/* 加载更多 */}
-        {hotels.length > 0 && (
-          <View className="load-more">
-            {loading ? (
-              <Text>加载中...</Text>
-            ) : !hasMore ? (
-              <Text>没有更多了</Text>
-            ) : null}
-          </View>
-        )}
-        
-        <View className="list-bottom-space"></View>
-      </ScrollView>
+      {/* 酒店列表：支持上滑自动加载更多 + 虚拟列表渲染 */}
+      <VirtualHotelList
+        loading={loading}
+        totalCount={totalCount}
+        topPaddingHeight={topPaddingHeight}
+        bottomPaddingHeight={bottomPaddingHeight}
+        visibleHotels={visibleHotels}
+        clampedStart={clampedStart}
+        city={city}
+        onHotelClick={handleHotelClick}
+        hasMore={hasMore}
+        refreshing={refreshing}
+        onLoadMore={handleLoadMore}
+        onRefresh={handleRefresh}
+        onScroll={handleScroll}
+      />
 
       {/* 入住/离店日历弹层（本页内修改日期） */}
       <SimpleCalendar

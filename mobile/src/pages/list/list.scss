@@ -480,6 +480,7 @@ $touch-active: rgba(0,0,0,0.1);
 }
 
 .hotel-location-row {
+  margin-top: 10px; // 地址这一行向下微调，避免遮挡上方标签（两行标签场景）
   margin-bottom: 4px;
 }
 
@@ -511,6 +512,24 @@ $touch-active: rgba(0,0,0,0.1);
   margin-bottom: 8px;
 }
 
+// 主要标签区（放在“名称/评分”与“地址”之间）：限制高度，避免撑破虚拟列表的固定 ITEM_HEIGHT
+.hotel-tags-row--primary {
+  // 主标签区允许最多两行展示；超出两行的标签直接隐藏，避免撑破虚拟列表的固定 ITEM_HEIGHT
+  flex-wrap: wrap;
+  // 需要包含两行标签本身高度 + 行间距（gap 的行距是 8px），否则第二行会被 overflow 裁掉一半
+  max-height: 68px; // 约等于两行标签高度 + 行间距
+  overflow: hidden;
+  margin-bottom: 6px;
+  gap: 8px 6px; // 两行标签更松一些：行距 8px，列距 6px
+
+  .tag,
+  .rank-tag {
+    margin-bottom: 0;
+    margin-right: 0; // 交给 gap 控制间距，避免行内/换行间距叠加
+    flex-shrink: 0;
+  }
+}
+
 .tag {
   display: inline-flex;
   padding: 4px 10px;
@@ -520,11 +539,20 @@ $touch-active: rgba(0,0,0,0.1);
   border-radius: 8px; // 关键修改：标签统一 8px 圆角
   font-size: 3vw;
   color: $text-secondary;
+  white-space: nowrap;
+}
+
+// 星级标签：橙色底色突出展示
+.tag--star {
+  background: #fff1e6;
+  color: #ff7a00;
 }
 
 .rank-tag {
   display: inline-flex;
   padding: 4px 10px;
+  margin-right: 6px;
+  margin-bottom: 6px;
   border-radius: 8px; // 关键修改：标签统一 8px 圆角
   background-color: rgba(25, 140, 255, 0.06);
   font-size: 3vw;
@@ -706,10 +734,6 @@ $touch-active: rgba(0,0,0,0.1);
   background-color: #fff;
   border-radius: 8px; // 关键修改：卡片统一 8px 圆角
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
-}
-
-.panel-distance {
-  // 可根据需要自定义特定背景
 }
 
 .panel-filter {
