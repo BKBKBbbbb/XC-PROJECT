@@ -1,7 +1,7 @@
 import { View, Text } from '@tarojs/components';
 import { useEffect, useState } from 'react';
 import Taro from '@tarojs/taro';
-import { calcNights } from '../../utils/hotel';
+import { calcNights } from '../../../utils/hotel';
 
 export default function DetailCalendar(props) {
   const {

@@ -19,7 +19,9 @@ export default function BannerSection(props) {
     onChangeImage,
     onPreviewImage,
     onBack,
-    onTabClick
+    onTabClick,
+    isFavorited,
+    onToggleFavorite
   } = props;
 
   const handleTopTabClick = (tab) => {
@@ -63,15 +65,14 @@ export default function BannerSection(props) {
         </View>
         <View className="nav-right-group">
           <View
-            className="nav-icon-btn"
-            onClick={() => Taro.showToast({ title: '已收藏（示例）', icon: 'none' })}
+            className={`nav-icon-btn ${isFavorited ? 'nav-icon-btn-favorited' : ''}`}
+            onClick={onToggleFavorite}
           >
-            <Text>☆</Text>
+            <Text>{isFavorited ? '★' : '☆'}</Text>
           </View>
           <View
             className="nav-icon-btn"
             onClick={() =>
-              Taro.showShareMenu?.() ||
               Taro.showToast({ title: '分享功能开发中', icon: 'none' })
             }
           >

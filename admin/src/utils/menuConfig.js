@@ -23,7 +23,7 @@ export const getMenuItems = (isAdmin, navigate) => {
     ...(isAdmin ? [{
       key: '/review',
       icon: React.createElement(Icon, { type: 'AuditOutlined' }),
-      label: '审核管理',
+      label: '评论管理',
       onClick: () => navigate('/review')
     }] : []),
   ];

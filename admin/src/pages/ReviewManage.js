@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Tag, Space, Button, message, Tabs, Modal, Input } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AppLayout, Icon } from '../components';
+import './ReviewManage.css';
 import { getMenuItems } from '../utils/menuConfig';
 import { commentApi } from '../utils/api';
 
 const { TextArea } = Input;
 
 const ReviewManage = () => {
-  const [commentTab, setCommentTab] = useState('pending');
+  const location = useLocation();
+  // 默认评论标签，支持通过 URL 查询参数 tab 设置，例如：/review?tab=published
+  const [commentTab, setCommentTab] = useState(() => {
+    const searchParams = new URLSearchParams(location.search || '');
+    const tab = searchParams.get('tab');
+    return tab || 'pending';
+  });
   const [commentList, setCommentList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [rejectModal, setRejectModal] = useState({ visible: false, id: null });
@@ -221,9 +228,9 @@ const ReviewManage = () => {
       username={userInfo.username || '管理员'}
       sidebarTheme="light"
     >
-      <div style={{ marginBottom: 16 }}>
+      <div className="review-manage-header">
         <h2>评论管理</h2>
-        <p style={{ color: '#666' }}>
+        <p className="review-manage-desc">
           对用户的评论进行审核管理，待审核的评论需要管理员审核后才能显示
         </p>
       </div>
@@ -231,7 +238,7 @@ const ReviewManage = () => {
       <Tabs
         activeKey={commentTab}
         onChange={setCommentTab}
-        style={{ marginBottom: 16 }}
+        className="review-manage-tabs"
         items={[
           { key: 'pending', label: '待审核' },
           { key: 'published', label: '已发布' },

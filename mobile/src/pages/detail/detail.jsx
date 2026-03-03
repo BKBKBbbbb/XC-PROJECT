@@ -47,6 +47,8 @@ export default function Detail() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showAllRooms, setShowAllRooms] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  // 收藏状态
+  const [isFavorited, setIsFavorited] = useState(false);
 
   // 入住/离店日期与人数信息
   const [checkInDate, setCheckInDate] = useState(null); // Date
@@ -213,7 +215,28 @@ export default function Detail() {
   };
 
   const handleBack = () => {
-    Taro.navigateBack();
+    // 优先走正常的返回栈逻辑（从列表页 navigateTo 进来的情况）
+    const pages = Taro.getCurrentPages?.() || [];
+    if (pages.length > 1) {
+      Taro.navigateBack();
+      return;
+    }
+
+    // 兼容 H5 直接从外部链接进入详情页的场景（此时没有上一页）
+    if (process.env.TARO_ENV === 'h5') {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        // 没有可退的历史时，直接回到酒店列表页
+        Taro.redirectTo({
+          url: '/pages/list/list'
+        });
+      }
+    } else {
+      Taro.redirectTo({
+        url: '/pages/list/list'
+      });
+    }
   };
 
   const handleImageChange = (e) => {
@@ -341,6 +364,14 @@ export default function Detail() {
           onPreviewImage={handleImagePreview}
           onBack={handleBack}
           onTabClick={handleTopTabClick}
+          isFavorited={isFavorited}
+          onToggleFavorite={() => {
+            setIsFavorited((prev) => !prev);
+            Taro.showToast({
+              title: !isFavorited ? '已收藏' : '已取消收藏',
+              icon: 'none'
+            });
+          }}
         />
 
         <BaseInfoSection hotel={hotel} />

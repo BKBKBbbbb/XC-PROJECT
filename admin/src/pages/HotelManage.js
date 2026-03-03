@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Tag, Space, Modal, message, Input, Tabs, Descriptions, Divider } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AppLayout, Icon } from '../components';
+import './HotelManage.css';
 import { getMenuItems } from '../utils/menuConfig';
 import { hotelApi } from '../utils/api';
 
@@ -13,7 +14,13 @@ const HotelManage = () => {
   const [loading, setLoading] = useState(false);
   const [rejectModal, setRejectModal] = useState({ visible: false, id: null });
   const [rejectReason, setRejectReason] = useState('');
-  const [statusTab, setStatusTab] = useState('pending'); // 状态筛选标签页
+  const location = useLocation();
+  // 状态筛选标签页，支持通过 URL 查询参数 tab 设置默认值，例如 /hotel?tab=approved
+  const [statusTab, setStatusTab] = useState(() => {
+    const searchParams = new URLSearchParams(location.search || '');
+    const tab = searchParams.get('tab');
+    return tab || 'pending';
+  });
   const [actionLoadingId, setActionLoadingId] = useState(null); // 正在执行操作的酒店 ID（通过/拒绝/下线/恢复）
   const [detailModal, setDetailModal] = useState({ visible: false, loading: false, hotel: null }); // 查看详情弹窗
   const navigate = useNavigate();
@@ -245,7 +252,7 @@ const HotelManage = () => {
       render: (v, record) => {
         // 只有已拒绝状态才显示拒绝原因
         if (record.status === 'rejected') {
-          return v ? <span style={{ color: '#ff4d4f' }}>{v}</span> : '-';
+          return v ? <span className="hotel-manage-reject-text">{v}</span> : '-';
         }
         return '-';
       }
@@ -357,15 +364,15 @@ const HotelManage = () => {
       username={userInfo.username}
       sidebarTheme="light"
     >
-          <div style={{ marginBottom: 16 }}>
+      <div className="hotel-manage-header">
             <h2>{isAdmin ? '酒店管理' : '我的酒店'}</h2>
-            <p style={{ color: '#666' }}>
+        <p className="hotel-manage-header-desc">
               {isAdmin ? '管理所有酒店信息' : '录入和管理您的酒店信息'}
             </p>
           </div>
       {/* 只有商户角色才能看到新增按钮 */}
       {!isAdmin && (
-          <div style={{ marginBottom: 16 }}>
+          <div className="hotel-manage-add-wrapper">
             <Button 
               type="primary" 
               icon={<Icon type="PlusOutlined" />} 
@@ -408,7 +415,7 @@ const HotelManage = () => {
         okText="确认拒绝"
         cancelText="取消"
       >
-        <p style={{ marginBottom: 16 }}>确定要拒绝这个酒店吗？</p>
+        <p className="hotel-manage-reject-tip">确定要拒绝这个酒店吗？</p>
         <TextArea
           placeholder="请输入拒绝原因（必填）"
           rows={4}
@@ -430,9 +437,9 @@ const HotelManage = () => {
         width={900}
       >
         {detailModal.loading ? (
-          <div style={{ textAlign: 'center', padding: '40px 0' }}>正在加载...</div>
+          <div className="hotel-manage-detail-loading">正在加载...</div>
         ) : !detailModal.hotel ? (
-          <div style={{ textAlign: 'center', padding: '40px 0', color: '#999' }}>暂无详情数据</div>
+          <div className="hotel-manage-detail-empty">暂无详情数据</div>
         ) : (
           (() => {
             const h = detailModal.hotel;
@@ -459,14 +466,14 @@ const HotelManage = () => {
             };
 
             return (
-              <div style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: 8 }}>
+              <div className="hotel-manage-detail-scroll">
                 {/* 基本信息 */}
                 <Descriptions
                   title="基本信息"
                   bordered
                   size="small"
                   column={2}
-                  style={{ marginBottom: 16 }}
+                  className="hotel-manage-section"
                 >
                   <Descriptions.Item label="中文名称">{h.name || '-'}</Descriptions.Item>
                   <Descriptions.Item label="英文名称">{h.nameEn || '-'}</Descriptions.Item>
@@ -486,7 +493,7 @@ const HotelManage = () => {
                   bordered
                   size="small"
                   column={2}
-                  style={{ marginBottom: 16 }}
+                  className="hotel-manage-section"
                 >
                   <Descriptions.Item label="免费停车场">
                     {renderYesNo(h.freeParking)}
@@ -524,7 +531,7 @@ const HotelManage = () => {
                   bordered
                   size="small"
                   column={2}
-                  style={{ marginBottom: 16 }}
+                  className="hotel-manage-section"
                 >
                   <Descriptions.Item label="联系电话">{h.phone || '-'}</Descriptions.Item>
                   <Descriptions.Item label="邮箱">{h.email || '-'}</Descriptions.Item>
@@ -532,32 +539,23 @@ const HotelManage = () => {
                 </Descriptions>
 
                 {/* 酒店描述 */}
-                <div style={{ marginBottom: 16 }}>
-                  <h4 style={{ marginBottom: 8 }}>酒店描述</h4>
-                  <div
-                    style={{
-                      padding: 12,
-                      minHeight: 60,
-                      border: '1px solid #f0f0f0',
-                      borderRadius: 4,
-                      background: '#fafafa',
-                      whiteSpace: 'pre-wrap',
-                    }}
-                  >
+                <div className="hotel-manage-section">
+                  <h4 className="hotel-manage-description-title">酒店描述</h4>
+                  <div className="hotel-manage-description-box">
                     {h.description || '暂无描述'}
                   </div>
                 </div>
 
                 {/* 周边信息 */}
-                <div style={{ marginBottom: 16 }}>
-                  <h4 style={{ marginBottom: 8 }}>周边信息</h4>
-                  <Divider orientation="left" plain style={{ margin: '8px 0' }}>
+                <div className="hotel-manage-section">
+                  <h4 className="hotel-manage-section-title">周边信息</h4>
+                  <Divider orientation="left" plain className="hotel-manage-divider">
                     附近景点
                   </Divider>
                   {nearbyAttractions.length === 0 ? (
-                    <div style={{ color: '#999', marginBottom: 8 }}>暂无景点信息</div>
+                    <div className="hotel-manage-section-empty">暂无景点信息</div>
                   ) : (
-                    <ul style={{ paddingLeft: 20 }}>
+                    <ul className="hotel-manage-list">
                       {nearbyAttractions.map((item, index) => (
                         <li key={index}>
                           {item.name || '-'}（距离：{formatDistance(item)}）
@@ -566,13 +564,13 @@ const HotelManage = () => {
                     </ul>
                   )}
 
-                  <Divider orientation="left" plain style={{ margin: '8px 0' }}>
+                  <Divider orientation="left" plain className="hotel-manage-divider">
                     附近交通
                   </Divider>
                   {nearbyTransport.length === 0 ? (
-                    <div style={{ color: '#999', marginBottom: 8 }}>暂无交通信息</div>
+                    <div className="hotel-manage-section-empty">暂无交通信息</div>
                   ) : (
-                    <ul style={{ paddingLeft: 20 }}>
+                    <ul className="hotel-manage-list">
                       {nearbyTransport.map((item, index) => (
                         <li key={index}>
                           {item.type || '-'} - {item.station || '-'}（距离：
@@ -582,13 +580,13 @@ const HotelManage = () => {
                     </ul>
                   )}
 
-                  <Divider orientation="left" plain style={{ margin: '8px 0' }}>
+                  <Divider orientation="left" plain className="hotel-manage-divider">
                     附近商场
                   </Divider>
                   {nearbyMalls.length === 0 ? (
-                    <div style={{ color: '#999' }}>暂无商场信息</div>
+                    <div className="hotel-manage-section-empty">暂无商场信息</div>
                   ) : (
-                    <ul style={{ paddingLeft: 20 }}>
+                    <ul className="hotel-manage-list">
                       {nearbyMalls.map((item, index) => (
                         <li key={index}>
                           {item.name || '-'}（距离：{formatDistance(item)}）
@@ -599,10 +597,10 @@ const HotelManage = () => {
                 </div>
 
                 {/* 房型与价格信息 */}
-                <div style={{ marginBottom: 16 }}>
-                  <h4 style={{ marginBottom: 8 }}>房型与价格信息</h4>
+                <div className="hotel-manage-section">
+                  <h4 className="hotel-manage-section-title">房型与价格信息</h4>
                   {roomTypes.length === 0 ? (
-                    <div style={{ color: '#999' }}>暂无房型信息</div>
+                    <div className="hotel-manage-section-empty">暂无房型信息</div>
                   ) : (
                     <Table
                       size="small"
@@ -642,10 +640,10 @@ const HotelManage = () => {
                 </div>
 
                 {/* 优惠信息 */}
-                <div style={{ marginBottom: 16 }}>
-                  <h4 style={{ marginBottom: 8 }}>优惠信息</h4>
+                <div className="hotel-manage-section">
+                  <h4 className="hotel-manage-section-title">优惠信息</h4>
                   {discounts.length === 0 ? (
-                    <div style={{ color: '#999' }}>暂无优惠信息</div>
+                    <div className="hotel-manage-section-empty">暂无优惠信息</div>
                   ) : (
                     <Table
                       size="small"
@@ -687,10 +685,10 @@ const HotelManage = () => {
                 </div>
 
                 {/* 自定义维度 */}
-                <div style={{ marginBottom: 0 }}>
-                  <h4 style={{ marginBottom: 8 }}>自定义维度</h4>
+                <div className="hotel-manage-section">
+                  <h4 className="hotel-manage-section-title">自定义维度</h4>
                   {customFields.length === 0 ? (
-                    <div style={{ color: '#999' }}>暂无自定义维度</div>
+                    <div className="hotel-manage-section-empty">暂无自定义维度</div>
                   ) : (
                     <Table
                       size="small"

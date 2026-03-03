@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Row, Col } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { AppLayout, Icon, StatCard, theme } from '../components';
+import { AppLayout, Icon, StatCard } from '../components';
+import { theme } from '../components/common/theme';
+import './Dashboard.css';
 import { getMenuItems } from '../utils/menuConfig';
+import { dashboardApi } from '../utils/api';
 
 // 核心数据
 const mockStats = {
-  hotelCount: 12,
+  hotelCount: 13,
   pendingCount: 2,
   reviewCount: 38,
 };
@@ -30,13 +33,46 @@ const recentReviews = [
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const stats = mockStats;
+  // 后端统计数据
+  const [stats, setStats] = useState({
+    hotelCount: 0,
+    pendingCount: 0,
+    reviewCount: 0,
+  });
+  const [loadingStats, setLoadingStats] = useState(true);
 
   const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
   const isAdmin = userInfo.role === 'admin';
   const username = userInfo.username || 'admin';
 
   const menuItems = getMenuItems(isAdmin, navigate);
+
+  // 拉取后端运营统计数据（已通过酒店数、待审核数、评论总数）
+  useEffect(() => {
+    let mounted = true;
+    const fetchStats = async () => {
+      try {
+        const res = await dashboardApi.getStats();
+        if (!mounted || !res) return;
+        setStats({
+          hotelCount: Number(res.hotelCount ?? 0),
+          pendingCount: Number(res.pendingCount ?? 0),
+          reviewCount: Number(res.reviewCount ?? 0),
+        });
+      } catch (error) {
+        console.error('获取运营统计失败:', error);
+        // 出错时保持默认 0，避免展示错误的“死数据”
+      } finally {
+        if (mounted) {
+          setLoadingStats(false);
+        }
+      }
+    };
+    fetchStats();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -70,13 +106,13 @@ const Dashboard = () => {
 
   const getStatusTag = (status) => {
     const statusMap = {
-      pending: { text: '待审核', color: theme.warning, bg: theme.warningBg },
-      published: { text: '已通过', color: theme.success, bg: theme.successBg },
-      rejected: { text: '已驳回', color: theme.textTertiary, bg: '#F5F7FA' },
+      pending: { text: '待审核', className: 'dashboard-status-pending' },
+      published: { text: '已通过', className: 'dashboard-status-published' },
+      rejected: { text: '已驳回', className: 'dashboard-status-rejected' },
     };
     const config = statusMap[status] || statusMap.pending;
     return (
-      <span style={{ color: config.color, background: config.bg, padding: '2px 8px', borderRadius: 4, fontSize: 12 }}>
+      <span className={`dashboard-status-tag ${config.className}`}>
         {config.text}
       </span>
     );
@@ -92,39 +128,57 @@ const Dashboard = () => {
       sidebarTheme="dark"
       contentStyle={{ padding: 24, minHeight: 'calc(100vh - 64px)' }}
     >
-          {/* 顶部欢迎条 - 精简版 */}
-          {stats.pendingCount > 0 && isAdmin && (
-            <div style={{ background: theme.primaryLight, borderRadius: 8, padding: '12px 20px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8, border: `1px solid ${theme.primary}30` }}>
-              <Icon type="BellOutlined" style={{ color: theme.primary }} />
-              <span style={{ color: theme.textPrimary }}>
+          {/* 顶部欢迎条 - 精简版（避免加载时闪现错误数据） */}
+          {!loadingStats && stats.pendingCount > 0 && isAdmin && (
+            <div className="dashboard-welcome-bar">
+              <Icon type="BellOutlined" />
+              <span className="dashboard-welcome-text">
                 欢迎回来，<strong>{username}</strong>！今日有 
-                <span style={{ color: theme.warning, fontWeight: 600 }}> {stats.pendingCount} 项待审核任务</span>
-                <a onClick={() => navigate('/review')} style={{ marginLeft: 8, color: theme.primary }}>
+                <span className="dashboard-welcome-highlight"> {stats.pendingCount} 项待审核任务</span>
+                <a onClick={() => navigate('/review')} className="dashboard-welcome-link">
                   立即处理 <Icon type="RightOutlined" />
                 </a>
               </span>
             </div>
           )}
 
-          {/* 数据卡片区域 */}
-          <div style={{ marginBottom: 24 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: theme.textPrimary, marginBottom: 16 }}>核心数据</h3>
-            <Row gutter={[16, 16]}>
-              <Col xs={24} sm={12} lg={8}>
-                <StatCard title="酒店总数（家）" value={stats.hotelCount} prefix={<Icon type="BankOutlined" />} onClick={() => navigate('/hotel')} />
-              </Col>
-              <Col xs={24} sm={12} lg={8}>
-                <StatCard title="待审核（条）" value={stats.pendingCount} prefix={<Icon type="ClockCircleOutlined" />} color={theme.warning} onClick={isAdmin ? () => navigate('/review') : undefined} isPending={stats.pendingCount > 0} />
-              </Col>
-              <Col xs={24} sm={12} lg={8}>
-                <StatCard title="评论总数（条）" value={stats.reviewCount} prefix={<Icon type="MessageOutlined" />} />
-              </Col>
-            </Row>
-          </div>
+          {/* 数据卡片区域（仅管理员可见） */}
+          {isAdmin && (
+            <div className="dashboard-section">
+              <h3 className="dashboard-section-title">核心数据</h3>
+              <Row gutter={[16, 16]}>
+                <Col xs={24} sm={12} lg={8}>
+                  <StatCard
+                    title="酒店总数（家）"
+                    value={loadingStats ? '--' : stats.hotelCount}
+                    prefix={<Icon type="BankOutlined" />}
+                    onClick={() => navigate('/hotel?tab=approved')}
+                  />
+                </Col>
+                <Col xs={24} sm={12} lg={8}>
+                  <StatCard 
+                    title="待审核（条）" 
+                    value={loadingStats ? '--' : stats.pendingCount} 
+                    prefix={<Icon type="ClockCircleOutlined" />} 
+                    color={theme.warning} 
+                    onClick={isAdmin ? () => navigate('/hotel') : undefined} 
+                    isPending={!loadingStats && stats.pendingCount > 0} />
+                </Col>
+                <Col xs={24} sm={12} lg={8}>
+                  <StatCard
+                    title="评论总数（条）"
+                    value={loadingStats ? '--' : stats.reviewCount}
+                    prefix={<Icon type="MessageOutlined" />}
+                    onClick={() => navigate('/review?tab=published')}
+                  />
+                </Col>
+              </Row>
+            </div>
+          )}
 
           {/* 今日数据 */}
-          <div style={{ marginBottom: 24 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: theme.textPrimary, marginBottom: 16 }}>今日概览</h3>
+          <div className="dashboard-section">
+            <h3 className="dashboard-section-title">今日概览</h3>
             <Row gutter={[16, 16]}>
               <Col xs={24} sm={12} lg={8}>
                 <StatCard title="今日订单（笔）" value={mockTodayStats.todayOrders} suffix="笔" prefix={<Icon type="FileTextOutlined" />} subText={`${mockTodayStats.orderChange > 0 ? '↑' : '↓'} ${Math.abs(mockTodayStats.orderChange)}%`} />
@@ -140,27 +194,33 @@ const Dashboard = () => {
 
           {/* 最近审核记录 */}
           <Card
-            title={<span style={{ fontWeight: 600, fontSize: 15 }}><Icon type="AuditOutlined" style={{ marginRight: 8 }} />最近审核记录</span>}
-            extra={isAdmin && (<a onClick={() => navigate('/review')} style={{ color: theme.textSecondary, fontSize: 13 }}>查看全部 <Icon type="RightOutlined" /></a>)}
-            style={{ borderRadius: 8, boxShadow: '0 2px 12px 0 rgba(0, 0, 0, 0.05)' }}
-            styles={{ header: { borderBottom: `1px solid ${theme.border}` } }}
+            title={<span className="dashboard-card-title"><Icon type="AuditOutlined" />最近评论记录</span>}
+            extra={isAdmin && (<a onClick={() => navigate('/review')} className="dashboard-card-extra">查看全部 <Icon type="RightOutlined" /></a>)}
+            className="dashboard-card"
           >
             {recentReviews.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: theme.textTertiary }}>
-                <Icon type="InboxOutlined" style={{ fontSize: 48, marginBottom: 16, opacity: 0.5 }} />
+              <div className="dashboard-empty">
+                <Icon type="InboxOutlined" className="dashboard-empty-icon" />
                 <div>暂无审核记录</div>
               </div>
             ) : (
               recentReviews.map((review, index) => (
-                <div key={review.id} style={{ padding: '14px 0', borderBottom: index < recentReviews.length - 1 ? `1px solid ${theme.border}` : 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 500, color: theme.textPrimary, marginBottom: 4 }}>{review.hotel}</div>
-                    <div style={{ fontSize: 13, color: theme.textTertiary }}>{review.user} · {review.content}</div>
+                <div
+                  key={review.id}
+                  className={`dashboard-review-item ${index < recentReviews.length - 1 ? 'dashboard-review-item-border' : ''}`}
+                >
+                  <div className="dashboard-review-main">
+                    <div className="dashboard-review-hotel">{review.hotel}</div>
+                    <div className="dashboard-review-info">{review.user} · {review.content}</div>
                   </div>
-                  <div style={{ textAlign: 'right', minWidth: 80 }}>
-                    <div style={{ marginBottom: 4 }}>
+                  <div className="dashboard-review-right">
+                    <div className="dashboard-review-stars">
                       {[1,2,3,4,5].map(star => (
-                        <Icon key={star} type="StarFilled" style={{ color: star <= review.rating ? '#FFB800' : '#E5E6EB', fontSize: 12, marginRight: 2 }} />
+                        <Icon
+                          key={star}
+                          type="StarFilled"
+                          className={`dashboard-review-star ${star <= review.rating ? 'dashboard-review-star-active' : ''}`}
+                        />
                       ))}
                     </div>
                     {getStatusTag(review.status)}

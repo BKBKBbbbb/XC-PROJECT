@@ -1,6 +1,6 @@
 import { View, Text, Image } from '@tarojs/components';
 import Taro from '@tarojs/taro';
-import BEDImg from '../../assets/BED.jpg';
+import BEDImg from '../../../assets/BED.jpg';
 
 export default function RecommendRoomSection(props) {
   const {
@@ -67,21 +67,23 @@ export default function RecommendRoomSection(props) {
               </View>
             </View>
             <View className="room-price">
-              <Text className="price-symbol">¥</Text>
-              <Text className="price-value">
-                {formatPrice(Number(room.price || 0))}
-              </Text>
-              <Text className="price-unit">起</Text>
+              <View className="room-price-main">
+                <Text className="price-symbol">¥</Text>
+                <Text className="price-value">
+                  {formatPrice(Number(room.price || 0))}
+                </Text>
+                <Text className="price-unit">起</Text>
+              </View>
               <View
                 className="book-btn"
                 onClick={() =>
                   Taro.showToast({
-                    title: '查看房型预订方案开发中',
+                    title: '领券订功能开发中',
                     icon: 'none'
                   })
                 }
               >
-                <Text>查看房型</Text>
+                <Text>领券订</Text>
               </View>
             </View>
           </View>

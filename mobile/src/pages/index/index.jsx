@@ -170,7 +170,7 @@ export default function Index() {
       tags: selectedTags
     };
 
-    // 实际项目中可以在这里调用后端接口；本需求只要求跳转即可
+    // 实际项目中可以在这里调用后端接口
     console.log('查询参数：', queryPayload);
 
     const city = encodeURIComponent(currentCity || '');

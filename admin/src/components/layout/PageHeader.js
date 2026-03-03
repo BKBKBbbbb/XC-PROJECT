@@ -2,7 +2,7 @@ import React from 'react';
 import { Layout, Breadcrumb, Avatar, Dropdown } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../common/Icon';
-import { theme } from '../common/theme';
+import './PageHeader.css';
 
 const { Header } = Layout;
 
@@ -18,50 +18,34 @@ const PageHeader = ({ breadcrumbItems, userMenuItems, username }) => {
   const defaultBreadcrumbItems = [
     { 
       title: (
-        <>
+        <span
+          onClick={() => navigate('/dashboard')}
+          className="page-header-home-link"
+        >
           <Icon type="HomeOutlined" /> 首页
-        </>
-      ), 
-      onClick: () => navigate('/dashboard') 
+        </span>
+      )
     },
     ...(breadcrumbItems || [])
   ];
 
   return (
-    <Header style={{ 
-      background: '#fff', 
-      padding: '0 24px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      borderBottom: '1px solid #E5E6EB',
-      position: 'sticky',
-      top: 0,
-      zIndex: 99
-    }}>
+    <Header className="page-header">
       <Breadcrumb
         items={defaultBreadcrumbItems}
-        style={{ display: 'flex', alignItems: 'center' }}
+        className="page-header-breadcrumb"
       />
       
       {userMenuItems ? (
         <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
-          <div style={{ 
-            cursor: 'pointer', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 8, 
-            padding: '4px 12px', 
-            borderRadius: 20, 
-            transition: 'background 0.3s' 
-          }}>
-            <Avatar style={{ backgroundColor: theme.primary }} icon={<Icon type="UserOutlined" />} />
-            <span style={{ color: theme.textPrimary, fontWeight: 500 }}>{username}</span>
-            <Icon type="DownOutlined" style={{ color: theme.textTertiary, fontSize: 12 }} />
+          <div className="page-header-user">
+            <Avatar className="page-header-avatar" icon={<Icon type="UserOutlined" />} />
+            <span className="page-header-username">{username}</span>
+            <Icon type="DownOutlined" className="page-header-dropdown-icon" />
           </div>
         </Dropdown>
       ) : (
-        <div style={{ color: '#666' }}>
+        <div className="page-header-welcome">
           欢迎，{username || '用户'}
         </div>
       )}

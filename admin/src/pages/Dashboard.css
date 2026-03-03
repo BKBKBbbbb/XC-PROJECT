@@ -1,0 +1,119 @@
+.dashboard-status-tag {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.dashboard-status-pending {
+  color: #ff8a00;
+  background: #fff7e6;
+}
+
+.dashboard-status-published {
+  color: #00b578;
+  background: #e8ffea;
+}
+
+.dashboard-status-rejected {
+  color: #86909c;
+  background: #f5f7fa;
+}
+
+.dashboard-welcome-bar {
+  border-radius: 8px;
+  padding: 12px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(22, 93, 255, 0.18);
+  background: #f2f5ff;
+}
+
+.dashboard-welcome-text {
+  color: #1d2129;
+}
+
+.dashboard-welcome-highlight {
+  color: #ff7d00;
+  font-weight: 600;
+}
+
+.dashboard-welcome-link {
+  margin-left: 8px;
+  color: #165dff;
+}
+
+.dashboard-section {
+  margin-bottom: 24px;
+}
+
+.dashboard-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1d2129;
+  margin-bottom: 16px;
+}
+
+.dashboard-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-empty {
+  text-align: center;
+  padding: 40px 0;
+  color: #86909c;
+}
+
+.dashboard-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.dashboard-review-item {
+  padding: 14px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-review-item-border {
+  border-bottom: 1px solid #e5e6eb;
+}
+
+.dashboard-review-main {
+  flex: 1;
+}
+
+.dashboard-review-hotel {
+  font-weight: 500;
+  color: #1d2129;
+  margin-bottom: 4px;
+}
+
+.dashboard-review-info {
+  font-size: 13px;
+  color: #86909c;
+}
+
+.dashboard-review-right {
+  text-align: right;
+  min-width: 80px;
+}
+
+.dashboard-review-stars {
+  margin-bottom: 4px;
+}
+
+.dashboard-review-star {
+  font-size: 12px;
+  margin-right: 2px;
+  color: #e5e6eb;
+}
+
+.dashboard-review-star-active {
+  color: #ffb800;
+}
+

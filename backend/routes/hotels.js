@@ -95,7 +95,6 @@ router.post('/', auth, async (req, res) => {
     const { status, ...restBody } = req.body;
 
     // 仅保留 hotels 表中真实存在的字段，避免未知字段导致 SQL 错误
-    // 仅保留 hotels 表中真实存在的字段，避免未知字段导致 SQL 错误
     // 注意：如果这里新增字段，请确保同步在数据库中添加对应列
     const allowedFields = [
       'name',

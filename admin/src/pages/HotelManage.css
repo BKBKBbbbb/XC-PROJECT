@@ -1,0 +1,62 @@
+.hotel-manage-header {
+  margin-bottom: 16px;
+}
+
+.hotel-manage-header-desc {
+  color: #666;
+}
+
+.hotel-manage-add-wrapper {
+  margin-bottom: 16px;
+}
+
+.hotel-manage-reject-tip {
+  margin-bottom: 16px;
+}
+
+.hotel-manage-detail-loading,
+.hotel-manage-detail-empty {
+  text-align: center;
+  padding: 40px 0;
+}
+
+.hotel-manage-detail-empty {
+  color: #999;
+}
+
+.hotel-manage-detail-scroll {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.hotel-manage-section {
+  margin-bottom: 16px;
+}
+
+.hotel-manage-description-title {
+  margin-bottom: 8px;
+}
+
+.hotel-manage-description-box {
+  padding: 12px;
+  min-height: 60px;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  background: #fafafa;
+  white-space: pre-wrap;
+}
+
+.hotel-manage-section-title {
+  margin-bottom: 8px;
+}
+
+.hotel-manage-section-empty {
+  color: #999;
+  margin-bottom: 8px;
+}
+
+.hotel-manage-list {
+  padding-left: 20px;
+}
+

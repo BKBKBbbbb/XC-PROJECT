@@ -100,10 +100,35 @@ const matchKeyword = (hotel, keyword) => {
 };
 
 // 标签筛选命中判断：酒店标签数组中只要包含任意一个已选标签即可
+// 同时兼容「免费停车场 / 免费停车」「含早餐 / 早餐」这类语义标签，映射到后端布尔字段
 const matchTagFilter = (hotel, selectedTags) => {
   if (!selectedTags || selectedTags.length === 0) return true;
-  if (!Array.isArray(hotel.tags) || hotel.tags.length === 0) return false;
-  return selectedTags.some((tag) => hotel.tags.includes(tag));
+
+  const rawTags = Array.isArray(hotel.tags) ? hotel.tags : [];
+  const normalizedTags = rawTags
+    .filter(Boolean)
+    .map((t) => String(t).trim());
+
+  const hasFreeParking = !!hotel.freeParking;
+  const hasBreakfast = !!hotel.breakfastType;
+
+  return selectedTags.some((tag) => {
+    if (!tag) return false;
+    const text = String(tag).trim();
+
+    // 1) 先直接匹配酒店自身的 tags 文案
+    if (normalizedTags.includes(text)) return true;
+
+    // 2) 语义映射：将首页/列表上的快捷标签映射到后端布尔字段
+    if (text === '免费停车' || text === '免费停车场') {
+      return hasFreeParking;
+    }
+    if (text === '含早餐' || text === '早餐') {
+      return hasBreakfast;
+    }
+
+    return false;
+  });
 };
 
 // 虚拟列表相关常量：单个酒店卡片高度
@@ -568,8 +593,10 @@ export default function List() {
   };
 
   const handleSearchClick = () => {
+    // 顶部放大镜按钮：改为刷新当前列表
+    handleRefresh();
     Taro.showToast({
-      title: '可在本页直接修改城市、日期和人数',
+      title: '已为你刷新当前城市的酒店列表',
       icon: 'none'
     });
   };

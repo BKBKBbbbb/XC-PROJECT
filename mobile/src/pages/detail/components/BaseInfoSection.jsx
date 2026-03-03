@@ -1,5 +1,5 @@
 import { View, Text } from '@tarojs/components';
-import { getScoreText } from '../../utils/hotel';
+import { getScoreText } from '../../../utils/hotel';
 import Taro from '@tarojs/taro';
 
 export default function BaseInfoSection({ hotel }) {
@@ -34,16 +34,16 @@ export default function BaseInfoSection({ hotel }) {
       <View className="base-rating">
         <View className="rating-box">
           <Text className="rating-score">
-            {hotel.rating ? hotel.rating.toFixed(1) : '--'}
+            {hotel.rating ? hotel.rating.toFixed(1) : '98'}
           </Text>
           <Text className="rating-label">
-            {getScoreText(hotel.rating)} · 携程用户评分
+            {getScoreText(hotel.rating|| 66)} · 用户评分
           </Text>
         </View>
         <View className="divider" />
         <View className="review-box">
-          <Text className="review-count">{hotel.reviewCount || 0}条点评</Text>
-          <Text className="review-rate">98%用户推荐（示意）</Text>
+          <Text className="review-count">{hotel.reviewCount || 66}条点评</Text>
+          <Text className="review-rate">98%用户推荐</Text>
         </View>
       </View>
 

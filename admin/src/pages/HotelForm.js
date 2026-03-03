@@ -11,6 +11,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { hotelApi } from '../utils/api';
+import './HotelForm.css';
 import dayjs from 'dayjs';
 
 const { Header, Sider, Content } = Layout;
@@ -488,7 +489,7 @@ const HotelForm = () => {
         return (
           <>
         {/* 基本信息 */}
-        <div style={{ display: selectedMenu === 'basic' ? 'block' : 'none' }}>
+        <div className={`hotel-form-section ${selectedMenu === 'basic' ? 'hotel-form-section-active' : ''}`}>
             <Form.Item
               name="name"
             label="酒店名称（中文）"
@@ -552,7 +553,7 @@ const HotelForm = () => {
             rules={[{ required: true, message: '请选择开业时间' }]}
           >
             <DatePicker 
-              style={{ width: '100%' }}
+              className="hotel-form-full-width"
               placeholder="请选择开业时间（YYYY-MM-DD）"
               format="YYYY-MM-DD"
             />
@@ -619,8 +620,8 @@ const HotelForm = () => {
         </div>
 
         {/* 房型与基础价格 */}
-        <div style={{ display: selectedMenu === 'rooms' ? 'block' : 'none' }}>
-          <Space direction="vertical" style={{ width: '100%' }} size="large">
+        <div className={`hotel-form-section ${selectedMenu === 'rooms' ? 'hotel-form-section-active' : ''}`}>
+          <Space direction="vertical" className="hotel-form-full-width" size="large">
             {roomTypes.map((room, index) => (
               <Card
                 key={index}
@@ -639,8 +640,8 @@ const HotelForm = () => {
                   </Button>
                 }
               >
-                <Space direction="vertical" style={{ width: '100%' }} size="middle">
-                  <Form.Item label="房型名称（如：经典双床房）" required style={{ marginBottom: 0 }}>
+                <Space direction="vertical" className="hotel-form-room-card-space" size="middle">
+                  <Form.Item label="房型名称（如：经典双床房）" required>
                     <Input
                       placeholder="请输入房型名称"
                       value={room.name}
@@ -652,10 +653,10 @@ const HotelForm = () => {
                     />
                   </Form.Item>
 
-                  <Space style={{ width: '100%' }}>
-                    <Form.Item label="基础单价（元）" required style={{ marginBottom: 0, flex: 1 }}>
+                  <Space className="hotel-form-full-width">
+                    <Form.Item label="基础单价（元）" required style={{ flex: 1 }}>
                       <InputNumber
-                        style={{ width: '100%' }}
+                        className="hotel-form-full-width"
                         min={0}
                         value={room.basePrice}
                         onChange={(value) => {
@@ -666,7 +667,7 @@ const HotelForm = () => {
                         placeholder="请输入基础价格"
                       />
                     </Form.Item>
-                    <Form.Item label="床型" required style={{ marginBottom: 0, flex: 1 }}>
+                    <Form.Item label="床型" required style={{ flex: 1 }}>
                       <Input
                         placeholder="如：1.8m 大床、1.2m 双床"
                         value={room.bedType}
@@ -679,10 +680,10 @@ const HotelForm = () => {
                     </Form.Item>
                   </Space>
 
-                  <Space style={{ width: '100%' }}>
-                    <Form.Item label="最大入住人数" required style={{ marginBottom: 0, flex: 1 }}>
+                  <Space className="hotel-form-full-width">
+                    <Form.Item label="最大入住人数" required style={{ flex: 1 }}>
                       <InputNumber
-                        style={{ width: '100%' }}
+                        className="hotel-form-full-width"
                         min={1}
                         value={room.maxOccupancy}
                         onChange={(value) => {
@@ -693,9 +694,9 @@ const HotelForm = () => {
                         placeholder="请输入最大入住人数"
                       />
                     </Form.Item>
-                    <Form.Item label="剩余房量" required style={{ marginBottom: 0, flex: 1 }}>
+                    <Form.Item label="剩余房量" required style={{ flex: 1 }}>
                       <InputNumber
-                        style={{ width: '100%' }}
+                        className="hotel-form-full-width"
                         min={0}
                         value={room.remainingRooms}
                         onChange={(value) => {
@@ -708,7 +709,7 @@ const HotelForm = () => {
                     </Form.Item>
                   </Space>
 
-                  <Form.Item label="房型简介（选填）" style={{ marginBottom: 0 }}>
+                  <Form.Item label="房型简介（选填）">
                     <TextArea
                       rows={3}
                       placeholder="可填写房间面积、楼层、窗景等信息"
@@ -749,12 +750,12 @@ const HotelForm = () => {
         </div>
 
         {/* 联系方式 */}
-        <div style={{ display: selectedMenu === 'contact' ? 'block' : 'none' }}>
+        <div className={`hotel-form-section ${selectedMenu === 'contact' ? 'hotel-form-section-active' : ''}`}>
             <Form.Item
               name="phone"
             label={
               <span>
-                联系电话 <span style={{ color: 'red' }}>*</span>
+                联系电话 <span className="hotel-form-contact-required">*</span>
               </span>
             }
               rules={[
@@ -801,7 +802,7 @@ const HotelForm = () => {
         </div>
 
         {/* 酒店描述 */}
-        <div style={{ display: selectedMenu === 'description' ? 'block' : 'none' }}>
+        <div className={`hotel-form-section ${selectedMenu === 'description' ? 'hotel-form-section-active' : ''}`}>
           <Form.Item
             name="description"
             label="酒店描述"
@@ -816,11 +817,11 @@ const HotelForm = () => {
         </div>
 
         {/* 周边信息 */}
-        <div style={{ display: selectedMenu === 'nearby' ? 'block' : 'none' }}>
+        <div className={`hotel-form-section ${selectedMenu === 'nearby' ? 'hotel-form-section-active' : ''}`}>
           <Card title="附近热门景点" style={{ marginBottom: 16 }}>
-            <Space direction="vertical" style={{ width: '100%' }}>
+            <Space direction="vertical" className="hotel-form-full-width">
               {nearbyAttractions.map((item, index) => (
-                <Space key={index} style={{ width: '100%' }}>
+                <Space key={index} className="hotel-form-full-width">
                   <Input
                     placeholder="景点名称"
                     value={item.name}
@@ -829,7 +830,7 @@ const HotelForm = () => {
                       newList[index] = { ...newList[index], name: e.target.value };
                       setNearbyAttractions(newList);
                     }}
-                    style={{ flex: 1 }}
+                    className="hotel-form-full-width"
                   />
                   <Space style={{ width: 260 }}>
                     <InputNumber
@@ -880,9 +881,9 @@ const HotelForm = () => {
           </Card>
 
           <Card title="附近交通" style={{ marginBottom: 16 }}>
-            <Space direction="vertical" style={{ width: '100%' }}>
+            <Space direction="vertical" className="hotel-form-full-width">
               {nearbyTransport.map((item, index) => (
-                <Space key={index} style={{ width: '100%' }}>
+                <Space key={index} className="hotel-form-full-width">
                   <Input
                     placeholder="交通方式（如：地铁1号线）"
                     value={item.type}
@@ -891,7 +892,7 @@ const HotelForm = () => {
                       newList[index] = { ...newList[index], type: e.target.value };
                       setNearbyTransport(newList);
                     }}
-                    style={{ flex: 1 }}
+                    className="hotel-form-full-width"
                   />
                   <Input
                     placeholder="站点名称"
@@ -952,9 +953,9 @@ const HotelForm = () => {
           </Card>
 
           <Card title="附近商场">
-            <Space direction="vertical" style={{ width: '100%' }}>
+            <Space direction="vertical" className="hotel-form-full-width">
               {nearbyMalls.map((item, index) => (
-                <Space key={index} style={{ width: '100%' }}>
+                <Space key={index} className="hotel-form-full-width">
                   <Input
                     placeholder="商场名称"
                     value={item.name}
@@ -963,7 +964,7 @@ const HotelForm = () => {
                       newList[index] = { ...newList[index], name: e.target.value };
                       setNearbyMalls(newList);
                     }}
-                    style={{ flex: 1 }}
+                    className="hotel-form-full-width"
                   />
                   <Space style={{ width: 260 }}>
                     <InputNumber
@@ -1015,8 +1016,8 @@ const HotelForm = () => {
         </div>
 
         {/* 价格优惠 */}
-        <div style={{ display: selectedMenu === 'discounts' ? 'block' : 'none' }}>
-          <Space direction="vertical" style={{ width: '100%' }} size="large">
+        <div className={`hotel-form-section ${selectedMenu === 'discounts' ? 'hotel-form-section-active' : ''}`}>
+          <Space direction="vertical" className="hotel-form-full-width" size="large">
             {discounts.map((discount, index) => (
               <Card 
                 key={index}
@@ -1066,8 +1067,8 @@ const HotelForm = () => {
                     />
                   </Form.Item>
                   
-                  <Space style={{ width: '100%' }}>
-                    <Form.Item label="优惠方式" style={{ marginBottom: 0, flex: 1 }}>
+                  <Space className="hotel-form-full-width">
+                    <Form.Item label="优惠方式" style={{ flex: 1 }}>
                       <Select
                         value={discount.method}
                         onChange={(value) => {
@@ -1083,7 +1084,7 @@ const HotelForm = () => {
                       </Select>
                     </Form.Item>
                     
-                    <Form.Item label="优惠值" style={{ marginBottom: 0, width: 200 }}>
+                    <Form.Item label="优惠值" style={{ width: 200 }}>
                       <InputNumber
                         value={discount.value}
                         onChange={(value) => {
@@ -1099,10 +1100,10 @@ const HotelForm = () => {
                     </Form.Item>
                   </Space>
 
-                  <Space style={{ width: '100%' }}>
-                    <Form.Item label="优惠开始时间" style={{ marginBottom: 0, flex: 1 }}>
+                  <Space className="hotel-form-full-width">
+                    <Form.Item label="优惠开始时间" style={{ flex: 1 }}>
                       <DatePicker
-                        style={{ width: '100%' }}
+                        className="hotel-form-full-width"
                         format="YYYY-MM-DD"
                         placeholder="请选择开始日期"
                         value={discount.startDate ? dayjs(discount.startDate) : null}
@@ -1116,9 +1117,9 @@ const HotelForm = () => {
                         }}
                       />
                     </Form.Item>
-                    <Form.Item label="优惠结束时间" style={{ marginBottom: 0, flex: 1 }}>
+                    <Form.Item label="优惠结束时间" style={{ flex: 1 }}>
                       <DatePicker
-                        style={{ width: '100%' }}
+                        className="hotel-form-full-width"
                         format="YYYY-MM-DD"
                         placeholder="请选择结束日期"
                         value={discount.endDate ? dayjs(discount.endDate) : null}
@@ -1183,8 +1184,8 @@ const HotelForm = () => {
         </div>
 
         {/* 自定义维度 */}
-        <div style={{ display: selectedMenu === 'custom' ? 'block' : 'none' }}>
-            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className={`hotel-form-section ${selectedMenu === 'custom' ? 'hotel-form-section-active' : ''}`}>
+            <div className="hotel-form-custom-header">
               <span>自定义维度</span>
               <Button 
                 type="dashed" 
@@ -1196,13 +1197,7 @@ const HotelForm = () => {
             </div>
             
             {customFields.length === 0 ? (
-              <div style={{ 
-                textAlign: 'center', 
-                padding: '40px 0', 
-                color: '#999',
-                border: '1px dashed #d9d9d9',
-                borderRadius: '8px'
-              }}>
+              <div className="hotel-form-custom-empty">
                 <EnvironmentOutlined style={{ fontSize: 32, marginBottom: 8 }} />
                 <p>暂无自定义维度</p>
                 <p>点击上方按钮添加（如：停车场、宠物、WiFi等）</p>
@@ -1278,15 +1273,9 @@ const HotelForm = () => {
             
             <Divider />
             
-            <div style={{ 
-              background: '#f6f8fa', 
-              padding: '16px', 
-              borderRadius: '8px',
-              fontSize: '13px',
-              color: '#666'
-            }}>
+            <div className="hotel-form-custom-tips">
               <h4 style={{ marginTop: 0 }}>💡 常见自定义维度示例</h4>
-              <ul style={{ marginBottom: 0, paddingLeft: '20px' }}>
+              <ul className="hotel-form-custom-tips-list">
               <li>标识 gym，名称 健身房，类型 是/否</li>
               <li>标识 parking，名称 停车场，类型 是/否</li>
               <li>标识 pet，名称 宠物友好，类型 是/否</li>
@@ -1300,16 +1289,9 @@ const HotelForm = () => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Header style={{ 
-        background: '#fff', 
-        padding: '0 24px', 
-        display: 'flex', 
-        justifyContent: 'space-between',
-        alignItems: 'center',
-          borderBottom: '1px solid #E5E6EB'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+    <Layout className="hotel-form-layout">
+      <Header className="hotel-form-header">
+        <div className="hotel-form-header-left">
           <Button 
             icon={<ArrowLeftOutlined />}
             onClick={() => navigate('/hotel')}
@@ -1342,10 +1324,7 @@ const HotelForm = () => {
       <Layout>
         <Sider 
           width={200} 
-          style={{ 
-            background: '#1D2129',
-            borderRight: '1px solid #E5E6EB'
-          }}
+          className="hotel-form-sider"
         >
           <Menu
             mode="inline"
@@ -1356,11 +1335,7 @@ const HotelForm = () => {
           />
         </Sider>
         
-        <Content style={{ 
-          padding: '24px', 
-          minHeight: 280,
-          background: '#F5F7FA'
-        }}>
+        <Content className="hotel-form-content">
           <Form
             form={form}
             layout="vertical"

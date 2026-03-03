@@ -28,8 +28,8 @@ try {
 const app = express();      // 创建Express应用实例
 
 // 中间件
-app.use(cors());
-app.use(express.json());
+app.use(cors());              // 跨域中间件
+app.use(express.json());      // 解析JSON请求体
 
 // 静态资源：对外暴露 /static 前缀，用于访问酒店图片等静态文件
 // 例如: backend/public/hotel.jpg -> http://localhost:3001/static/hotel.jpg
@@ -64,13 +64,14 @@ app.use('/api/rooms', roomRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/comments', commentRoutes);
 
-// Dashboard 统计接口（直接注册，确保可用）
+// Dashboard 统计接口
+// 这里直接挂在 /api/dashboard/stats，和 routes/dashboard.js 中的实现保持一致
 app.get('/api/dashboard/stats', auth, async (req, res) => {
   try {
     const [hotelCount, pendingCount, reviewCount] = await Promise.all([
-      hotels.count({ status: 'published' }),
-      comments.count({ status: 'pending' }),
-      comments.count(),
+      hotels.count({ status: 'published' }),   // 已发布酒店
+      comments.count({ status: 'pending' }),   // 待审核评论
+      comments.count({ status: 'published' }), // 已发布评论
     ]);
     const payload = {
       hotelCount: Number(hotelCount ?? 0),
