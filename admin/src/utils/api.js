@@ -8,7 +8,7 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// 请求拦截器 - 添加 Token
+// 请求拦截器 ：在请求发送出去之前，统一添加token，统一处理参数
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -20,7 +20,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// 响应拦截器 - 统一处理错误
+// 响应拦截器 ：在拿到响应之后，统一处理错误、统一格式化数据，这样每个API调用就不用重新写token逻辑
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {

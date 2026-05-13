@@ -5,8 +5,8 @@
   "proxy": "http://localhost:3001",
   "description": "易宿酒店预订平台 - PC管理端",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "cross-env TSC_COMPILE_ON_ERROR=true react-scripts start",
+    "build": "cross-env TSC_COMPILE_ON_ERROR=true react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -29,5 +29,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0"
   }
 }

@@ -1,10 +1,11 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
+const express = require('express');      // 引入 Express 框架
+const cors = require('cors');            // 引入跨域中间件
+const path = require('path');            // 路径处理
 const config = require('./config');
 const pool = require('./utils/db');
 const auth = require('./middleware/auth');
 const { hotels, comments } = require('./utils/store');
+const initDb = require('./scripts/init-db');
 
 // 引入路由
 let userRoutes, hotelRoutes, roomRoutes, orderRoutes, commentRoutes, dashboardRoutes;
@@ -69,9 +70,9 @@ app.use('/api/comments', commentRoutes);
 app.get('/api/dashboard/stats', auth, async (req, res) => {
   try {
     const [hotelCount, pendingCount, reviewCount] = await Promise.all([
-      hotels.count({ status: 'published' }),   // 已发布酒店
-      comments.count({ status: 'pending' }),   // 待审核评论
-      comments.count({ status: 'published' }), // 已发布评论
+      hotels.count({ status: 'published' }),
+      comments.count({ status: 'pending' }),
+      comments.count({ status: 'published' }),
     ]);
     const payload = {
       hotelCount: Number(hotelCount ?? 0),
@@ -118,7 +119,8 @@ app.use((err, req, res, next) => {
 });
 
 // 启动服务器
-app.listen(config.port, () => {
+app.listen(config.port, async () => {
+  await initDb();
   console.log(`服务器运行在 http://localhost:${config.port}`);
 });
 

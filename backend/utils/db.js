@@ -10,6 +10,9 @@ const dbConfig = {
   queueLimit: 0
 };
 
-const pool = mysql.createPool(dbConfig);
+// 创建数据库连接池
+const pool = mysql.createPool(dbConfig);     
 
+// 导出数据库连接池
 module.exports = pool;
+

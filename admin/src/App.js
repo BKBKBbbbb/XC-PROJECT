@@ -16,6 +16,9 @@ const PrivateRoute = ({ children }) => {
 
 function App() {
   return (
+    // React Router 6 使用 Routes + Route 的嵌套路由模式
+    // 比 v5 的 Switch 更简洁。
+    // element={<Component />} 传递的是 React Element 而不是 Component 对象。
     <div className="app">
       <Routes>
         <Route path="/login" element={<Login />} />

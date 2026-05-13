@@ -14,7 +14,7 @@ import ActivityBanner from './components/ActivityBanner';
 import VirtualHotelList from './components/VirtualHotelList';
 import './list.scss';
 
-// 顶部下拉筛选快捷标签（横向滚动）
+// 顶部下拉筛选快捷标签
 const filterTags = [
   { id: 1, name: '外滩核心区' },
   { id: 2, name: '新春套餐' },
@@ -31,7 +31,7 @@ const sortOptions = [
   { id: 'price_desc', name: '价格从高到低' }
 ];
 
-// 城市选择候选项（与首页保持一致）
+// 城市选择候选项
 const cityOptions = ['上海', '北京', '杭州', '广州', '深圳', '成都', '重庆', '西安', '南京'];
 
 // 价格区间选项
@@ -40,7 +40,7 @@ const priceRanges = ['不限', '¥0-¥300', '¥300-¥600', '¥600-¥1000', '¥10
 // 星级选项
 const starOptions = [1, 2, 3, 4, 5];
 
-// 顶部日期展示：2.21 - 2.23
+// 顶部日期展示
 const formatDateDisplay = (dateStr) => {
   if (!dateStr) return '';
   const d = new Date(dateStr);
@@ -50,7 +50,7 @@ const formatDateDisplay = (dateStr) => {
   return `${month}.${day}`;
 };
 
-// 根据当前价格区间文案判断价格是否命中
+// 根据当前价格区间文案判断价格是否选中
 const matchPriceRange = (price, range) => {
   if (!range || range === '不限') return true;
   const v = Number(price || 0) || 0;
@@ -216,12 +216,17 @@ export default function List() {
     });
   }, [hotels.length]);
 
+
+
   const fetchHotels = async (reset = false) => {
+    // 1.如果正在加载，直接返回，防止重复请求
     if (loading) return;
-    
+    // 2.设置加载状态为 true
     setLoading(true);
+    // 3.如果是重置，从第一页开始，否则继续加载下一页
     const currentPage = reset ? 1 : page;
     
+    // 4.构造请求参数
     try {
       const queryParams = {
         city,
@@ -239,18 +244,18 @@ export default function List() {
         children: childCount
       };
       
-      // 这里预留真实后端接口数据结构：
-      // 后端可返回 { list: HotelItem[], total: number }，其中 HotelItem 至少包含
-      // { _id, name, rating, address, price, star, tags, image, distance }
+      // 5.请求后端接口
       const res = await get('/hotels', queryParams);
+      // 6.处理后端返回的数据,给每个酒店加上最低价
       const newHotels = (res.list || []).map((hotel) => ({
         ...hotel,
-        // displayPrice 始终为该酒店最低价（房型/roomTypes/hotel.price 兜底）
         displayPrice: getMinHotelPrice(hotel),
       }));
 
+      // 7.合并数据
       const merged = reset ? newHotels : [...hotels, ...newHotels];
-      // 根据当前排序规则对「基础单价（元）」排序
+
+      // 8.根据当前排序规则对「基础单价（元）」排序
       merged.sort((a, b) => {
         const priceA = a.displayPrice || 0;
         const priceB = b.displayPrice || 0;
@@ -260,7 +265,7 @@ export default function List() {
         return priceA - priceB; // 默认价格从低到高
       });
 
-      // 前端补充价格区间 & 星级筛选（避免后端暂未实现筛选逻辑时无效果）
+      // 9.前端补充价格区间 & 星级筛选（避免后端暂未实现筛选逻辑时无效果）
       const filteredMerged = merged.filter((hotel) => {
         const priceValue =
           hotel.displayPrice != null && hotel.displayPrice !== undefined
@@ -274,13 +279,13 @@ export default function List() {
         );
       });
 
+      // 10. 更新酒店列表数据，并设置当前页码，并设置是否还有更多数据
       setHotels(filteredMerged);
-        setPage(currentPage + 1);
-      
+      setPage(currentPage + 1);
       setHasMore(newHotels.length >= 10);
+
     } catch (error) {
       console.error('获取酒店列表失败', error);
-      // 使用模拟数据
       const mockData = getMockHotels().map((hotel) => ({
         ...hotel,
         displayPrice: getMinHotelPrice(hotel),
@@ -307,9 +312,9 @@ export default function List() {
           matchTagFilter(hotel, selectedTags)
         );
       });
-
+      
       setHotels(filteredMergedMock);
-      setHasMore(false);
+      setHasMore(false);  
     } finally {
       setLoading(false);
       setRefreshing(false);

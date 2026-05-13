@@ -1,5 +1,5 @@
 const express = require('express');
-const { comments } = require('../utils/store');
+const { comments, hotels, users } = require('../utils/store');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
@@ -36,7 +36,23 @@ router.get('/', auth, async (req, res) => {
 
     let list = await comments.find();
     console.log('从数据库获取的评论数量:', list.length);
-    
+
+    // 补充酒店名称和用户名称
+    const hotelCache = {};
+    const userCache = {};
+    for (const c of list) {
+      if (c.hotelId && !hotelCache[c.hotelId]) {
+        const h = await hotels.findById(c.hotelId);
+        hotelCache[c.hotelId] = h ? h.name : '';
+      }
+      if (c.userId && !userCache[c.userId]) {
+        const u = await users.findById(c.userId);
+        userCache[c.userId] = u ? u.username : '';
+      }
+      c.hotelName = hotelCache[c.hotelId] || '';
+      c.userName = userCache[c.userId] || '';
+    }
+
     if (status) {
       list = list.filter(c => c.status === status);
       console.log('筛选后的评论数量:', list.length);
@@ -69,12 +85,13 @@ router.put('/:id/approve', auth, async (req, res) => {
       return res.status(403).json({ message: '无权限' });
     }
 
-    const comment = await comments.findById(req.params.id);
+    const id = parseInt(req.params.id, 10);
+    const comment = await comments.findById(id);
     if (!comment) {
       return res.status(404).json({ message: '评论不存在' });
     }
 
-    const updated = await comments.update(req.params.id, {
+    const updated = await comments.update(id, {
       status: 'published',
       reviewNote: null,
       updatedAt: new Date()
@@ -94,12 +111,13 @@ router.put('/:id/reject', auth, async (req, res) => {
     }
 
     const { reviewNote } = req.body;
-    const comment = await comments.findById(req.params.id);
+    const id = parseInt(req.params.id, 10);
+    const comment = await comments.findById(id);
     if (!comment) {
       return res.status(404).json({ message: '评论不存在' });
     }
 
-    const updated = await comments.update(req.params.id, {
+    const updated = await comments.update(id, {
       status: 'rejected',
       reviewNote: reviewNote || '审核不通过',
       updatedAt: new Date()
@@ -118,12 +136,13 @@ router.put('/:id/delete', auth, async (req, res) => {
       return res.status(403).json({ message: '无权限' });
     }
 
-    const comment = await comments.findById(req.params.id);
+    const id = parseInt(req.params.id, 10);
+    const comment = await comments.findById(id);
     if (!comment) {
       return res.status(404).json({ message: '评论不存在' });
     }
 
-    const updated = await comments.update(req.params.id, {
+    const updated = await comments.update(id, {
       status: 'deleted',
       updatedAt: new Date()
     });
@@ -141,7 +160,7 @@ router.put('/:id/restore', auth, async (req, res) => {
       return res.status(403).json({ message: '无权限' });
     }
 
-    const comment = await comments.findById(req.params.id);
+    const comment = await comments.findById(parseInt(req.params.id, 10));
     if (!comment) {
       return res.status(404).json({ message: '评论不存在' });
     }

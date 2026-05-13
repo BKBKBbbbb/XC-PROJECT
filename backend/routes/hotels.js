@@ -144,8 +144,12 @@ router.post('/', auth, async (req, res) => {
       hotel.status = 'pending';
     }
     
-    res.status(201).json(hotel);
-  } catch (error) {
+res.status(201).json(hotel);
+    } catch (error) {
+    console.error('创建酒店失败:', error.message);
+    console.error('  code:', error.code, 'errno:', error.errno, 'sqlState:', error.sqlState);
+    console.error('  sqlMessage:', error.sqlMessage);
+    console.error('  实际请求体 keys:', Object.keys(req.body || {}));
     res.status(500).json({ message: '服务器错误', error: error.message });
   }
 });
@@ -232,28 +236,6 @@ router.put('/:id/review', auth, async (req, res) => {
     const updateData = {
       status: status === 'approved' ? 'published' : 'rejected'
     };
-    
-    // 审核通过时清除reviewNote（设置为null），拒绝时设置reviewNote
-    if (status === 'approved') {
-      // 只有当reviewNote存在时才清除，避免不必要的null赋值
-      if (hotel.reviewNote) {
-        updateData.reviewNote = null; // 审核通过时清除拒绝原因
-      }
-    } else if (status === 'rejected') {
-      // 确保 reviewNote 不是 undefined
-      if (reviewNote !== undefined && reviewNote !== null) {
-        updateData.reviewNote = reviewNote;
-      } else {
-        updateData.reviewNote = '';
-      }
-    }
-    
-    // 最后检查：移除所有 undefined 值，确保不会传递到数据库
-    Object.keys(updateData).forEach(key => {
-      if (updateData[key] === undefined) {
-        delete updateData[key];
-      }
-    });
     
     // 调试日志
     console.log('审核酒店 - ID:', req.params.id);

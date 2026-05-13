@@ -3,7 +3,7 @@
 > 酒店预订全栈课程设计项目（Node.js + MySQL + Taro + React）  
 > GitHub: `https://github.com/BKBKBbbbb/XC-PROJECT`
 
-## 项目结构（结构清晰，分层明确）
+## 项目结构
 
 ```bash
 XC-PROJECT/

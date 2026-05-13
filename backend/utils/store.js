@@ -6,7 +6,7 @@ class MySqlStore {
     this.tableName = tableName;
   }
 
-  // 将 JSON 对象展开成 SQL 字段和值
+  // 将 JSON 对象展开成 SQL字段和值
   _parseItem(item) {
     const fields = [];
     const values = [];
@@ -109,12 +109,22 @@ class MySqlStore {
         };
 
         const { fields, values, placeholders } = this._parseItem(newItem);
-        
+
         const sql = `INSERT INTO ${this.tableName} (\`${fields.join('`, `')}\`) VALUES (${placeholders.join(', ')})`;
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[${this.tableName}] INSERT SQL:`, sql);
+          console.log(`[${this.tableName}] INSERT Values:`, values);
+        }
+
         await pool.execute(sql, values);
-        
+
         resolve(newItem);
       } catch (error) {
+        console.error(`[${this.tableName}] INSERT 失败:`, error.message);
+        console.error(`  code: ${error.code}, errno: ${error.errno}, sqlState: ${error.sqlState}`);
+        console.error(`  sqlMessage: ${error.sqlMessage}`);
+        console.error(`  Fields: ${Object.keys(item).join(', ')}`);
         reject(error);
       }
     });
